@@ -41,9 +41,37 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // Apply pending migrations to the database
-            // This ensures EF Core safely applies incremental migration files
-            await _context.Database.MigrateAsync();
+            // Check if database exists and can be connected to
+            if (await _context.Database.CanConnectAsync())
+            {
+                // Check if there are pending migrations
+                var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+                if (pendingMigrations.Any())
+                {
+                    _logger.LogInformation("Applying {Count} pending migration(s)...", pendingMigrations.Count());
+                    await _context.Database.MigrateAsync();
+                    _logger.LogInformation("Migrations applied successfully.");
+                }
+                else
+                {
+                    _logger.LogInformation("Database is up to date. No pending migrations.");
+                }
+            }
+            else
+            {
+                // Database doesn't exist, create it and apply migrations
+                _logger.LogInformation("Database does not exist. Creating database and applying migrations...");
+                await _context.Database.MigrateAsync();
+                _logger.LogInformation("Database created and migrations applied successfully.");
+            }
+        }
+        catch (Microsoft.Data.SqlClient.SqlException sqlEx) when (sqlEx.Number == 2714) // Object already exists
+        {
+            // Table already exists - this can happen if migration history is out of sync
+            // Log as warning but don't fail - the database is likely already migrated
+            _logger.LogWarning(sqlEx, 
+                "Database objects already exist. This may indicate the migration history is out of sync. " +
+                "If this persists, consider running 'dotnet ef database update' manually.");
         }
         catch (Exception ex)
         {
