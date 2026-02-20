@@ -1,4 +1,5 @@
-﻿using OjisanBackend.Application.Common.Exceptions;
+using OjisanBackend.Application.Common.Exceptions;
+using OjisanBackend.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,12 @@ public class CustomExceptionHandler : IExceptionHandler
                 { typeof(NotFoundException), HandleNotFoundException },
                 { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
                 { typeof(ForbiddenAccessException), HandleForbiddenAccessException },
+                { typeof(GroupNotAcceptingMembersException), HandleDomainException },
+                { typeof(GroupFullException), HandleDomainException },
+                { typeof(MemberAlreadyInGroupException), HandleDomainException },
+                { typeof(UserNotMemberOfGroupException), HandleDomainException },
+                { typeof(DuplicateSubmissionException), HandleDomainException },
+                { typeof(SubmissionNotRejectedException), HandleDomainException },
             };
     }
 
@@ -82,6 +89,31 @@ public class CustomExceptionHandler : IExceptionHandler
             Status = StatusCodes.Status403Forbidden,
             Title = "Forbidden",
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.3"
+        });
+    }
+
+    private async Task HandleDomainException(HttpContext httpContext, Exception ex)
+    {
+        // Map domain exceptions to appropriate HTTP status codes
+        var statusCode = ex switch
+        {
+            GroupNotAcceptingMembersException => StatusCodes.Status400BadRequest,
+            GroupFullException => StatusCodes.Status400BadRequest,
+            MemberAlreadyInGroupException => StatusCodes.Status409Conflict,
+            DuplicateSubmissionException => StatusCodes.Status409Conflict,
+            SubmissionNotRejectedException => StatusCodes.Status400BadRequest,
+            UserNotMemberOfGroupException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status400BadRequest
+        };
+
+        httpContext.Response.StatusCode = statusCode;
+
+        await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = statusCode,
+            Title = ex.GetType().Name,
+            Detail = ex.Message,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
         });
     }
 }

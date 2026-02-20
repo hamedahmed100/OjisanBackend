@@ -1,8 +1,12 @@
-﻿using Azure.Identity;
+using System;
+using System.Linq;
+using Azure.Identity;
 using OjisanBackend.Application.Common.Interfaces;
 using OjisanBackend.Infrastructure.Data;
 using OjisanBackend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -23,6 +27,32 @@ public static class DependencyInjection
 
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
+        // Configure CORS
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+            ?? new[] { "http://localhost:4200" };
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("FrontendPolicy", policy =>
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+            });
+        });
+
+        // Configure Rate Limiting
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter("AnonymousPolicy", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 30;
+                limiterOptions.Window = TimeSpan.FromMinutes(1);
+                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                limiterOptions.QueueLimit = 0;
+            });
+        });
 
         // Customise default API behaviour
         builder.Services.Configure<ApiBehaviorOptions>(options =>

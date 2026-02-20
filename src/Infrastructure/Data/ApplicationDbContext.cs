@@ -11,11 +11,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-    public DbSet<TodoList> TodoLists => Set<TodoList>();
-
-    public DbSet<TodoItem> TodoItems => Set<TodoItem>();
-
     public DbSet<Group> Groups => Set<Group>();
+
+    public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
+
+    public DbSet<OrderSubmission> OrderSubmissions => Set<OrderSubmission>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<ProductOption> ProductOptions => Set<ProductOption>();
+
+    public DbSet<BadgePosition> BadgePositions => Set<BadgePosition>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

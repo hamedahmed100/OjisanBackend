@@ -1,3 +1,4 @@
+using OjisanBackend.Application.Common.Models;
 using OjisanBackend.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,14 @@ builder.AddKeyVaultIfConfigured();
 builder.AddApplicationServices();
 builder.AddInfrastructureServices();
 builder.AddWebServices();
+
+// Configure settings from appsettings.json
+builder.Services.Configure<PricingSettings>(builder.Configuration.GetSection("PricingSettings"));
+builder.Services.Configure<FatorahSettings>(builder.Configuration.GetSection("FatorahSettings"));
+builder.Services.Configure<TrelloSettings>(builder.Configuration.GetSection("TrelloSettings"));
+builder.Services.Configure<OtoSettings>(builder.Configuration.GetSection("OtoSettings"));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsAppSettings"));
 
 var app = builder.Build();
 
@@ -22,8 +31,10 @@ else
 }
 
 app.UseHealthChecks("/health");
+app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseRateLimiter();
 
 app.UseSwaggerUi(settings =>
 {

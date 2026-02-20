@@ -1,4 +1,4 @@
-﻿using OjisanBackend.Domain.Constants;
+using OjisanBackend.Domain.Constants;
 using OjisanBackend.Domain.Entities;
 using OjisanBackend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -40,9 +40,9 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // See https://jasontaylor.dev/ef-core-database-initialisation-strategies
-            await _context.Database.EnsureDeletedAsync();
-            await _context.Database.EnsureCreatedAsync();
+            // Apply pending migrations to the database
+            // This ensures EF Core safely applies incremental migration files
+            await _context.Database.MigrateAsync();
         }
         catch (Exception ex)
         {
@@ -68,10 +68,22 @@ public class ApplicationDbContextInitialiser
     {
         // Default roles
         var administratorRole = new IdentityRole(Roles.Administrator);
+        var groupLeaderRole = new IdentityRole(Roles.GroupLeader);
+        var groupMemberRole = new IdentityRole(Roles.GroupMember);
 
         if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
         {
             await _roleManager.CreateAsync(administratorRole);
+        }
+
+        if (_roleManager.Roles.All(r => r.Name != groupLeaderRole.Name))
+        {
+            await _roleManager.CreateAsync(groupLeaderRole);
+        }
+
+        if (_roleManager.Roles.All(r => r.Name != groupMemberRole.Name))
+        {
+            await _roleManager.CreateAsync(groupMemberRole);
         }
 
         // Default users
@@ -88,21 +100,5 @@ public class ApplicationDbContextInitialiser
 
         // Default data
         // Seed, if necessary
-        if (!_context.TodoLists.Any())
-        {
-            _context.TodoLists.Add(new TodoList
-            {
-                Title = "Todo List",
-                Items =
-                {
-                    new TodoItem { Title = "Make a todo list 📃" },
-                    new TodoItem { Title = "Check off the first item ✅" },
-                    new TodoItem { Title = "Realise you've already done two things on the list! 🤯"},
-                    new TodoItem { Title = "Reward yourself with a nice, long nap 🏆" },
-                }
-            });
-
-            await _context.SaveChangesAsync();
-        }
     }
 }

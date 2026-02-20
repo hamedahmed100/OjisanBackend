@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Ardalis.GuardClauses;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using OjisanBackend.Application.Common.Exceptions;
 using OjisanBackend.Application.Common.Interfaces;
 using OjisanBackend.Domain.Entities;
 using OjisanBackend.Domain.Enums;
@@ -29,11 +31,16 @@ public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, Gui
 {
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
+    private readonly IInviteCodeService _inviteCodeService;
 
-    public CreateGroupCommandHandler(IApplicationDbContext context, IUser user)
+    public CreateGroupCommandHandler(
+        IApplicationDbContext context, 
+        IUser user,
+        IInviteCodeService inviteCodeService)
     {
         _context = context;
         _user = user;
+        _inviteCodeService = inviteCodeService;
     }
 
     public async Task<Guid> Handle(CreateGroupCommand request, CancellationToken cancellationToken)
@@ -42,24 +49,53 @@ public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, Gui
         Guard.Against.Null(_user, nameof(_user));
         Guard.Against.NullOrWhiteSpace(_user.Id, nameof(_user.Id));
 
-        var group = new Group
+        // Verify the product exists and is active before creating the group
+        var productExists = await _context.Products
+            .AnyAsync(p => p.Id == request.ProductId && p.IsActive, cancellationToken);
+
+        if (!productExists)
         {
-            LeaderUserId = _user.Id!,
-            MaxMembers = request.MaxMembers,
-            BaseDesignJson = JsonSerializer.Serialize(
-                request.BaseDesign ?? new BaseDesignDto(),
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                }),
-            Status = GroupStatus.Recruiting
-        };
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(
+                $"Product with ID {request.ProductId} not found or is not active.");
+        }
 
-        _context.Set<Group>().Add(group);
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var group = new Group
+            {
+                LeaderUserId = _user.Id!,
+                ProductId = request.ProductId,
+                MaxMembers = request.MaxMembers,
+                BaseDesignJson = JsonSerializer.Serialize(
+                    request.BaseDesign ?? new BaseDesignDto(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }),
+                Status = GroupStatus.Recruiting
+            };
 
-        await _context.SaveChangesAsync(cancellationToken);
+            _context.Groups.Add(group);
 
-        return group.PublicId;
+            // Save first to get the generated ID
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Generate and set the invite code based on the group's integer ID
+            group.InviteCode = _inviteCodeService.GenerateInviteCode(group.Id);
+
+            // Save again to persist the invite code
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return group.PublicId;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }
 
