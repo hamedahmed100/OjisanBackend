@@ -64,7 +64,7 @@ public class ProcessPaymentWebhookCommandHandler : IRequestHandler<ProcessPaymen
 
         if (payment is null)
         {
-            throw new NotFoundException(nameof(Payment), merchantResourceId!);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Payment), merchantResourceId!);
         }
 
         // Update payment status based on webhook

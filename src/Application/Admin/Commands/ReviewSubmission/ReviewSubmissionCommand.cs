@@ -39,7 +39,7 @@ public class ReviewSubmissionCommandHandler : IRequestHandler<ReviewSubmissionCo
 
         if (group is null)
         {
-            throw new NotFoundException(nameof(Group), request.GroupId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), request.GroupId);
         }
 
         // Locate the specific submission within the group
@@ -47,7 +47,7 @@ public class ReviewSubmissionCommandHandler : IRequestHandler<ReviewSubmissionCo
         
         if (submission is null)
         {
-            throw new NotFoundException(nameof(OrderSubmission), request.SubmissionId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(OrderSubmission), request.SubmissionId);
         }
 
         // Apply the review decision

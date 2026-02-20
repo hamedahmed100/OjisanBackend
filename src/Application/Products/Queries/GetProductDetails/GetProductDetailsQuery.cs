@@ -70,7 +70,7 @@ public class GetProductDetailsQueryHandler : IRequestHandler<GetProductDetailsQu
 
         if (product is null)
         {
-            throw new NotFoundException(nameof(Product), request.ProductId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Product), request.ProductId);
         }
 
         return new ProductDto

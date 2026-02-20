@@ -46,7 +46,7 @@ public class CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentS
 
         if (group is null)
         {
-            throw new NotFoundException(nameof(Group), request.GroupId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), request.GroupId);
         }
 
         // Ensure group is in Accepted status (ready for payment)

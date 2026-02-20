@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OjisanBackend.Application.Common.Exceptions;
 using OjisanBackend.Application.Common.Interfaces;
+using OjisanBackend.Domain.Entities;
 
 namespace OjisanBackend.Application.Groups.Commands.JoinGroup;
 
@@ -50,7 +51,7 @@ public class JoinGroupCommandHandler : IRequestHandler<JoinGroupCommand>
 
         if (group is null)
         {
-            throw new NotFoundException(nameof(Group), normalizedCode);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), normalizedCode);
         }
 
         // Validate invite code matches

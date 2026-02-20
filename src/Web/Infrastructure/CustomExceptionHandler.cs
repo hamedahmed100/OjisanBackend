@@ -15,7 +15,7 @@ public class CustomExceptionHandler : IExceptionHandler
         _exceptionHandlers = new()
             {
                 { typeof(ValidationException), HandleValidationException },
-                { typeof(NotFoundException), HandleNotFoundException },
+                { typeof(OjisanBackend.Application.Common.Exceptions.NotFoundException), HandleNotFoundException },
                 { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
                 { typeof(ForbiddenAccessException), HandleForbiddenAccessException },
                 { typeof(GroupNotAcceptingMembersException), HandleDomainException },
@@ -55,7 +55,7 @@ public class CustomExceptionHandler : IExceptionHandler
 
     private async Task HandleNotFoundException(HttpContext httpContext, Exception ex)
     {
-        var exception = (NotFoundException)ex;
+        var exception = (OjisanBackend.Application.Common.Exceptions.NotFoundException)ex;
 
         httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
 

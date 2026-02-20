@@ -28,21 +28,15 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired();
 
         // Configure the one-to-many relationship with ProductOption
-        var optionsNavigation = builder.HasMany<ProductOption>("_options")
+        builder.HasMany(p => p.Options)
             .WithOne()
             .HasForeignKey(po => po.ProductId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata;
-
-        optionsNavigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Configure the one-to-many relationship with BadgePosition
-        var badgePositionsNavigation = builder.HasMany<BadgePosition>("_badgePositions")
+        builder.HasMany(p => p.BadgePositions)
             .WithOne()
             .HasForeignKey(bp => bp.ProductId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata;
-
-        badgePositionsNavigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

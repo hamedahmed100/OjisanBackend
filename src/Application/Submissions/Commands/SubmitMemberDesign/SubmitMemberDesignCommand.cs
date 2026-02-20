@@ -42,7 +42,7 @@ public class SubmitMemberDesignCommandHandler : IRequestHandler<SubmitMemberDesi
 
         if (group is null)
         {
-            throw new NotFoundException(nameof(Group), request.GroupId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), request.GroupId);
         }
 
         // Create the submission

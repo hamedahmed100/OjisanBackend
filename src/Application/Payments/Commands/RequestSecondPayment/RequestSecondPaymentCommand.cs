@@ -41,7 +41,7 @@ public class RequestSecondPaymentCommandHandler : IRequestHandler<RequestSecondP
 
         if (group is null)
         {
-            throw new NotFoundException(nameof(Group), request.GroupId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), request.GroupId);
         }
 
         // Ensure this group actually qualifies for partial payment

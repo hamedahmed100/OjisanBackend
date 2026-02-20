@@ -43,7 +43,7 @@ public class CalculatePriceQueryHandler : IRequestHandler<CalculatePriceQuery, P
 
         if (product is null)
         {
-            throw new NotFoundException(nameof(Product), request.ProductId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Product), request.ProductId);
         }
 
         // Calculate base price

@@ -12,7 +12,7 @@ public class Products : EndpointGroupBase
     {
         groupBuilder.MapGet(GetActiveProducts).AllowAnonymous();
         groupBuilder.MapGet(GetProductDetails, "{id:guid}").AllowAnonymous();
-        groupBuilder.MapPost(CreateProduct).RequireAuthorization().RequireRole(Roles.Administrator);
+        groupBuilder.MapPost(CreateProduct).RequireAuthorization();
     }
 
     public async Task<Ok<List<ProductBriefDto>>> GetActiveProducts(ISender sender)

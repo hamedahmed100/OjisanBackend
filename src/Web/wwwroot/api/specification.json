@@ -6,6 +6,186 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/admin/pipeline/review": {
+      "get": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "GetGroupsInReview",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupInReviewDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/groups/{groupId}/submissions/{submissionId}/review": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "ReviewSubmission",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewSubmissionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/submissions/{id}/toggle-edit": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "ToggleEditLock",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleEditLockCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/groups/{id}/request-final-payment": {
+      "post": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "RequestSecondPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestSecondPaymentCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Groups": {
       "post": {
         "tags": [
@@ -44,54 +224,208 @@
         ]
       }
     },
-    "/api/TodoItems": {
+    "/api/Groups/{id}/invite-link": {
       "get": {
         "tags": [
-          "TodoItems"
+          "Groups"
         ],
-        "operationId": "GetTodoItemsWithPagination",
+        "operationId": "GetGroupInviteLink",
         "parameters": [
           {
-            "name": "ListId",
-            "in": "query",
+            "name": "id",
+            "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Groups/invite/{code}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "GetGroupByInviteCode",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupInviteInfoDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Groups/invite/{code}/join": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "JoinGroup",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Groups/{id}/submissions": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "SubmitMemberDesign",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitMemberDesignCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Groups/{groupId}/submissions/{submissionId}": {
+      "put": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "UpdateSubmission",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
             },
             "x-position": 1
           },
           {
-            "name": "PageNumber",
-            "in": "query",
+            "name": "submissionId",
+            "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "format": "guid"
             },
             "x-position": 2
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 3
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedListOfTodoItemBriefDto"
-                }
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubmissionCommand"
               }
             }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
           }
         },
         "security": [
@@ -99,18 +433,20 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/api/Payments/session": {
       "post": {
         "tags": [
-          "TodoItems"
+          "Payments"
         ],
-        "operationId": "CreateTodoItem",
+        "operationId": "CreatePaymentSession",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTodoItemCommand"
+                "$ref": "#/components/schemas/CreatePaymentSessionCommand"
               }
             }
           },
@@ -118,13 +454,12 @@
           "x-position": 1
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int32"
+                  "type": "string"
                 }
               }
             }
@@ -137,70 +472,50 @@
         ]
       }
     },
-    "/api/TodoItems/{id}": {
-      "put": {
+    "/api/Payments/webhook": {
+      "post": {
         "tags": [
-          "TodoItems"
+          "Payments"
         ],
-        "operationId": "UpdateTodoItem",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTodoItemCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
+        "operationId": "ProcessWebhook",
         "responses": {
-          "204": {
+          "200": {
             "description": ""
           },
           "400": {
             "description": ""
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      },
-      "delete": {
+        }
+      }
+    },
+    "/api/Pricing/calculate": {
+      "post": {
         "tags": [
-          "TodoItems"
+          "Pricing"
         ],
-        "operationId": "DeleteTodoItem",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
+        "operationId": "CalculatePrice",
+        "requestBody": {
+          "x-name": "query",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculatePriceQuery"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
-          "204": {
-            "description": ""
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceCalculationResult"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -210,86 +525,39 @@
         ]
       }
     },
-    "/api/TodoItems/UpdateDetail/{id}": {
-      "put": {
-        "tags": [
-          "TodoItems"
-        ],
-        "operationId": "UpdateTodoItemDetail",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTodoItemDetailCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
-    },
-    "/api/TodoLists": {
+    "/api/Products": {
       "get": {
         "tags": [
-          "TodoLists"
+          "Products"
         ],
-        "operationId": "GetTodoLists",
+        "operationId": "GetActiveProducts",
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TodosVm"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductBriefDto"
+                  }
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
-          "TodoLists"
+          "Products"
         ],
-        "operationId": "CreateTodoList",
+        "operationId": "CreateProduct",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTodoListCommand"
+                "$ref": "#/components/schemas/CreateProductCommand"
               }
             }
           },
@@ -302,8 +570,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int32"
+                  "type": "string",
+                  "format": "guid"
                 }
               }
             }
@@ -316,42 +584,67 @@
         ]
       }
     },
-    "/api/TodoLists/{id}": {
-      "put": {
+    "/api/Products/{id}": {
+      "get": {
         "tags": [
-          "TodoLists"
+          "Products"
         ],
-        "operationId": "UpdateTodoList",
+        "operationId": "GetProductDetails",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "format": "guid"
             },
             "x-position": 1
           }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/submissions/single": {
+      "post": {
+        "tags": [
+          "submissions"
+        ],
+        "operationId": "SubmitSingleOrder",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTodoListCommand"
+                "$ref": "#/components/schemas/SubmitSingleOrderCommand"
               }
             }
           },
           "required": true,
-          "x-position": 2
+          "x-position": 1
         },
         "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": ""
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -359,26 +652,42 @@
             "JWT": []
           }
         ]
-      },
-      "delete": {
+      }
+    },
+    "/api/Uploads/badge": {
+      "post": {
         "tags": [
-          "TodoLists"
+          "Uploads"
         ],
-        "operationId": "DeleteTodoList",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
+        "operationId": "UploadBadgeImage",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
           }
-        ],
+        },
         "responses": {
-          "204": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
             "description": ""
           }
         },
@@ -783,25 +1092,27 @@
         ]
       }
     },
-    "/api/WeatherForecasts": {
-      "get": {
+    "/api/Users/address": {
+      "put": {
         "tags": [
-          "WeatherForecasts"
+          "Users"
         ],
-        "operationId": "GetWeatherForecasts",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
-                }
+        "operationId": "UpdateUserAddress",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserAddressCommand"
               }
             }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
           }
         },
         "security": [
@@ -814,6 +1125,126 @@
   },
   "components": {
     "schemas": {
+      "GroupInReviewDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "leaderUserId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentSubmissions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inviteCode": {
+            "type": "string"
+          },
+          "submissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionSummaryDto"
+            }
+          }
+        }
+      },
+      "SubmissionSummaryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubmissionStatus"
+          },
+          "badgeImageUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SubmissionStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Draft",
+          "ReadyForReview",
+          "Submitted",
+          "Rejected",
+          "Accepted"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "ReviewSubmissionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "isApproved": {
+            "type": "boolean"
+          },
+          "feedback": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ToggleEditLockCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "enableEdit": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RequestSecondPaymentCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
       "CreateGroupCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -854,231 +1285,322 @@
           }
         }
       },
-      "PaginatedListOfTodoItemBriefDto": {
+      "GroupInviteInfoDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TodoItemBriefDto"
-            }
-          },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean"
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          }
-        }
-      },
-      "TodoItemBriefDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "listId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
+          "publicId": {
             "type": "string",
-            "nullable": true
+            "format": "guid"
           },
-          "done": {
-            "type": "boolean"
-          }
-        }
-      },
-      "CreateTodoItemCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "listId": {
+          "leaderUserId": {
+            "type": "string"
+          },
+          "productId": {
             "type": "integer",
             "format": "int32"
           },
-          "title": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "UpdateTodoItemCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
+          "maxMembers": {
             "type": "integer",
             "format": "int32"
           },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "done": {
-            "type": "boolean"
-          }
-        }
-      },
-      "UpdateTodoItemDetailCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
+          "currentMembers": {
             "type": "integer",
             "format": "int32"
           },
-          "listId": {
-            "type": "integer",
-            "format": "int32"
+          "status": {
+            "$ref": "#/components/schemas/GroupStatus"
           },
-          "priority": {
-            "$ref": "#/components/schemas/PriorityLevel"
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
+          "inviteCode": {
+            "type": "string"
           }
         }
       },
-      "PriorityLevel": {
+      "GroupStatus": {
         "type": "integer",
         "description": "",
         "x-enumNames": [
-          "None",
-          "Low",
-          "Medium",
-          "High"
+          "Recruiting",
+          "ReadyForReview",
+          "Accepted",
+          "Finalized",
+          "Cancelled"
         ],
         "enum": [
           0,
           1,
           2,
-          3
+          3,
+          4
         ]
       },
-      "TodosVm": {
+      "SubmitMemberDesignCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "priorityLevels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LookupDto"
-            }
+          "groupId": {
+            "type": "string",
+            "format": "guid"
           },
-          "lists": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TodoListDto"
-            }
+          "customDesignJson": {
+            "type": "string"
+          },
+          "calculatedPrice": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
-      "LookupDto": {
+      "UpdateSubmissionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "newCustomDesignJson": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePaymentSessionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "PriceCalculationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "totalPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "upfrontAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "remainingAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isPartialPayment": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CalculatePriceQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "selectedOptionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          }
+        }
+      },
+      "ProductBriefDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
             "type": "string",
-            "nullable": true
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ProductTypeDto"
           }
         }
       },
-      "TodoListDto": {
+      "ProductTypeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
             "type": "string",
-            "nullable": true
+            "format": "guid"
           },
-          "colour": {
-            "type": "string",
-            "nullable": true
+          "name": {
+            "type": "string"
           },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TodoItemDto"
-            }
-          }
-        }
-      },
-      "TodoItemDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
+          "description": {
+            "type": "string"
           },
-          "listId": {
-            "type": "integer",
-            "format": "int32"
+          "basePrice": {
+            "type": "number",
+            "format": "decimal"
           },
-          "title": {
-            "type": "string",
-            "nullable": true
+          "type": {
+            "$ref": "#/components/schemas/ProductTypeDto2"
           },
-          "done": {
+          "isActive": {
             "type": "boolean"
           },
-          "priority": {
-            "type": "integer",
-            "format": "int32"
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductOptionDto"
+            }
           },
-          "note": {
-            "type": "string",
-            "nullable": true
+          "badgePositions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgePositionDto"
+            }
           }
         }
       },
-      "CreateTodoListCommand": {
+      "ProductTypeDto2": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "title": {
-            "type": "string",
-            "nullable": true
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
-      "UpdateTodoListCommand": {
+      "ProductOptionDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "category": {
+            "$ref": "#/components/schemas/OptionCategoryDto"
+          },
+          "value": {
+            "type": "string"
+          },
+          "additionalCost": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "OptionCategoryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
             "type": "integer",
             "format": "int32"
           },
-          "title": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "BadgePositionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
             "type": "string",
-            "nullable": true
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isRequired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateProductCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ProductType"
+          }
+        }
+      },
+      "ProductType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Jacket",
+          "Hoodie",
+          "Pants"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "SubmitSingleOrderCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "calculatedPrice": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -1307,23 +1829,23 @@
           }
         }
       },
-      "WeatherForecast": {
+      "UpdateUserAddressCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "date": {
-            "type": "string",
-            "format": "date-time"
+          "street": {
+            "type": "string"
           },
-          "temperatureC": {
-            "type": "integer",
-            "format": "int32"
+          "city": {
+            "type": "string"
           },
-          "temperatureF": {
-            "type": "integer",
-            "format": "int32"
+          "district": {
+            "type": "string"
           },
-          "summary": {
+          "postalCode": {
+            "type": "string"
+          },
+          "phoneNumber": {
             "type": "string"
           }
         }

@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OjisanBackend.Application.Common.Interfaces;
+using OjisanBackend.Domain.Entities;
 
 namespace OjisanBackend.Application.Groups.Queries.GetGroupInviteLink;
 

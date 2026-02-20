@@ -19,7 +19,7 @@ public class Payments : EndpointGroupBase
         return TypedResults.Ok(checkoutUrl);
     }
 
-    public async Task<Results<Ok, BadRequest, Unauthorized>> ProcessWebhook(
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult>> ProcessWebhook(
         ISender sender,
         HttpContext httpContext)
     {

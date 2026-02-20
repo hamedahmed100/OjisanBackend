@@ -39,25 +39,15 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
             .HasMaxLength(500);
 
         // Configure the one-to-many relationship with GroupMember
-        // Map to the private backing field _members
-        var membersNavigation = builder.HasMany<GroupMember>("_members")
+        builder.HasMany(g => g.Members)
             .WithOne()
             .HasForeignKey(m => m.GroupId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata;
-
-        // Configure the navigation property to use field access mode
-        membersNavigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Configure the one-to-many relationship with OrderSubmission
-        // Map to the private backing field _submissions
-        var submissionsNavigation = builder.HasMany<OrderSubmission>("_submissions")
+        builder.HasMany(g => g.Submissions)
             .WithOne()
             .HasForeignKey(s => s.GroupId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata;
-
-        // Configure the navigation property to use field access mode
-        submissionsNavigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

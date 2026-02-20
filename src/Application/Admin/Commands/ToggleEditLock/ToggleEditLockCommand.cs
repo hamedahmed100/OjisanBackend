@@ -35,7 +35,7 @@ public class ToggleEditLockCommandHandler : IRequestHandler<ToggleEditLockComman
 
         if (submission is null)
         {
-            throw new NotFoundException(nameof(OrderSubmission), request.SubmissionId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(OrderSubmission), request.SubmissionId);
         }
 
         if (request.EnableEdit)

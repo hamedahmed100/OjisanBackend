@@ -9,7 +9,7 @@ public record ProductBriefDto
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public decimal BasePrice { get; init; }
-    public ProductTypeDto Type { get; init; }
+    public ProductTypeDto Type { get; init; } = null!;
 }
 
 public record ProductTypeDto

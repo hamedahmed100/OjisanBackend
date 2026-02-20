@@ -3,6 +3,7 @@ using OjisanBackend.Domain.Entities;
 using OjisanBackend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -86,15 +87,19 @@ public class ApplicationDbContextInitialiser
             await _roleManager.CreateAsync(groupMemberRole);
         }
 
-        // Default users
-        var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
+        // Default admin user
+        var administrator = new ApplicationUser
+        {
+            UserName = "OjiAdmin",
+            Email = "OjiAdmin"
+        };
 
         if (_userManager.Users.All(u => u.UserName != administrator.UserName))
         {
-            await _userManager.CreateAsync(administrator, "Administrator1!");
+            await _userManager.CreateAsync(administrator, "OjisJestBackEndAdmin!2026");
             if (!string.IsNullOrWhiteSpace(administratorRole.Name))
             {
-                await _userManager.AddToRolesAsync(administrator, new [] { administratorRole.Name });
+                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
             }
         }
 
