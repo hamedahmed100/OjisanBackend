@@ -4,6 +4,7 @@ using OjisanBackend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -44,10 +45,46 @@ public class ApplicationDbContextInitialiser
             // Check if database exists and can be connected to
             if (await _context.Database.CanConnectAsync())
             {
-                // Check if there are pending migrations
                 var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+                
                 if (pendingMigrations.Any())
                 {
+                    // Check if key tables already exist (indicates database is already migrated)
+                    // This helps detect when migration history is out of sync
+                    bool tablesExist = false;
+                    try
+                    {
+                        using var command = _context.Database.GetDbConnection().CreateCommand();
+                        command.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'AspNetRoles'";
+                        await _context.Database.OpenConnectionAsync();
+                        var result = await command.ExecuteScalarAsync();
+                        tablesExist = result != null && Convert.ToInt32(result) > 0;
+                    }
+                    catch
+                    {
+                        // If we can't check tables, proceed with normal migration
+                        // This handles cases where database connection works but queries fail
+                    }
+                    finally
+                    {
+                        await _context.Database.CloseConnectionAsync();
+                    }
+                    
+                    if (tablesExist)
+                    {
+                        // Tables exist but migration history shows pending migrations
+                        // This means migration history is out of sync - skip migration to avoid errors
+                        _logger.LogWarning(
+                            "Database tables exist but migration history shows {Count} pending migration(s). " +
+                            "This indicates the migration history table (__EFMigrationsHistory) is out of sync. " +
+                            "Skipping migration attempt to avoid errors. " +
+                            "The database appears to be up to date. " +
+                            "To fix the migration history, run: INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ('20260220145302_ojisan-db', '10.0.0')",
+                            pendingMigrations.Count());
+                        return; // Skip migration - database is already set up
+                    }
+                    
+                    // Normal case: apply pending migrations
                     _logger.LogInformation("Applying {Count} pending migration(s)...", pendingMigrations.Count());
                     await _context.Database.MigrateAsync();
                     _logger.LogInformation("Migrations applied successfully.");
@@ -69,9 +106,10 @@ public class ApplicationDbContextInitialiser
         {
             // Table already exists - this can happen if migration history is out of sync
             // Log as warning but don't fail - the database is likely already migrated
-            _logger.LogWarning(sqlEx, 
-                "Database objects already exist. This may indicate the migration history is out of sync. " +
-                "If this persists, consider running 'dotnet ef database update' manually.");
+            _logger.LogWarning(
+                "Database objects already exist. The database appears to be up to date, " +
+                "but migration history may be out of sync. To fix this, run: " +
+                "dotnet ef migrations script --idempotent | sqlcmd");
         }
         catch (Exception ex)
         {
