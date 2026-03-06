@@ -15,6 +15,8 @@ public record SubmitSingleOrderCommand : IRequest<Guid>
     public string CustomDesignJson { get; init; } = string.Empty;
 
     public decimal CalculatedPrice { get; init; }
+
+    public string NameBehind { get; init; } = string.Empty;
 }
 
 public class SubmitSingleOrderCommandHandler : IRequestHandler<SubmitSingleOrderCommand, Guid>
@@ -49,6 +51,7 @@ public class SubmitSingleOrderCommandHandler : IRequestHandler<SubmitSingleOrder
             GroupId = null,
             UserId = _user.Id!,
             CustomDesignJson = request.CustomDesignJson,
+            NameBehind = request.NameBehind,
             Price = request.CalculatedPrice,
             Status = SubmissionStatus.ReadyForReview
         };

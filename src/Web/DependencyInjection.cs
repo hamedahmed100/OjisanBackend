@@ -3,6 +3,7 @@ using System.Linq;
 using Azure.Identity;
 using OjisanBackend.Application.Common.Interfaces;
 using OjisanBackend.Infrastructure.Data;
+using OjisanBackend.Web.Infrastructure;
 using OjisanBackend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -59,6 +60,9 @@ public static class DependencyInjection
             options.SuppressModelStateInvalidFilter = true);
 
         builder.Services.AddEndpointsApiExplorer();
+
+        // In Development, refresh wwwroot/api/specification.json from runtime OpenAPI on app start so Swagger always reflects latest code
+        builder.Services.AddHostedService<OpenApiSpecRefreshHostedService>();
 
         builder.Services.AddOpenApiDocument((configure, sp) =>
         {

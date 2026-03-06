@@ -16,13 +16,29 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.HasIndex(g => g.InviteCode)
             .IsUnique();
 
+        builder.Property(g => g.Name)
+            .IsRequired()
+            .HasMaxLength(200);
+
         builder.Property(g => g.LeaderUserId)
             .IsRequired()
             .HasMaxLength(450); // Standard Identity user ID length
 
+        builder.Property(g => g.MemberCount)
+            .IsRequired();
+
+        builder.Property(g => g.IsUniformColorSelected)
+            .IsRequired();
+
+        builder.Property(g => g.AppliedDiscountPercentage)
+            .HasPrecision(5, 2);
+
         builder.Property(g => g.BaseDesignJson)
             .IsRequired()
             .HasMaxLength(4000);
+
+        builder.Property(g => g.NameBehind)
+            .HasMaxLength(200);
 
         builder.Property(g => g.Status)
             .IsRequired()

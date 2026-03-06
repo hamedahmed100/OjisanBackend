@@ -9,6 +9,7 @@ namespace OjisanBackend.Application.Groups.Queries.GetGroupByInviteCode;
 public record GroupInviteInfoDto
 {
     public Guid PublicId { get; init; }
+    public string Name { get; init; } = string.Empty;
     public string LeaderUserId { get; init; } = string.Empty;
     public int ProductId { get; init; }
     public int MaxMembers { get; init; }
@@ -79,6 +80,7 @@ public class GetGroupByInviteCodeQueryHandler : IRequestHandler<GetGroupByInvite
         return new GroupInviteInfoDto
         {
             PublicId = group.PublicId,
+            Name = group.Name,
             LeaderUserId = group.LeaderUserId,
             ProductId = group.ProductId,
             MaxMembers = group.MaxMembers,

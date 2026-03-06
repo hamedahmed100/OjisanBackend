@@ -19,6 +19,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasPrecision(18, 2)
             .IsRequired();
 
+        builder.Property(p => p.BadgeUnitPrice)
+            .HasPrecision(18, 2)
+            .IsRequired();
+
         builder.Property(p => p.Type)
             .IsRequired()
             .HasConversion<string>()

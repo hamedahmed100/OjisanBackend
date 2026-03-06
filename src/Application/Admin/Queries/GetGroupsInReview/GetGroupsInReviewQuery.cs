@@ -8,6 +8,7 @@ namespace OjisanBackend.Application.Admin.Queries.GetGroupsInReview;
 public record GroupInReviewDto
 {
     public Guid GroupId { get; init; }
+    public string Name { get; init; } = string.Empty;
     public string LeaderUserId { get; init; } = string.Empty;
     public int ProductId { get; init; }
     public int MaxMembers { get; init; }
@@ -50,6 +51,7 @@ public class GetGroupsInReviewQueryHandler : IRequestHandler<GetGroupsInReviewQu
         var groups = groupsData.Select(g => new GroupInReviewDto
         {
             GroupId = g.PublicId,
+            Name = g.Name,
             LeaderUserId = g.LeaderUserId,
             ProductId = g.ProductId,
             MaxMembers = g.MaxMembers,

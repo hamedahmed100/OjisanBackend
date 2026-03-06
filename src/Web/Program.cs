@@ -36,10 +36,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRateLimiter();
 
+app.UseOpenApi(); // Generate OpenAPI from endpoints at runtime
+
 app.UseSwaggerUi(settings =>
 {
     settings.Path = "/api";
-    settings.DocumentPath = "/api/specification.json";
+    settings.DocumentPath = "/swagger/v1/swagger.json";
 });
 
 

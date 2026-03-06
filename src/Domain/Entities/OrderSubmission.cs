@@ -28,6 +28,11 @@ public class OrderSubmission : BaseAuditableEntity
     public string CustomDesignJson { get; set; } = string.Empty;
 
     /// <summary>
+    /// Optional name to be printed on the back of the jacket for single (non-group) orders.
+    /// </summary>
+    public string? NameBehind { get; set; }
+
+    /// <summary>
     /// Calculated price for this submission.
     /// </summary>
     public decimal Price { get; set; }
@@ -47,6 +52,16 @@ public class OrderSubmission : BaseAuditableEntity
     /// Optional feedback from admin when rejecting or accepting.
     /// </summary>
     public string? AdminFeedback { get; set; }
+
+    /// <summary>
+    /// Badges for this jacket order. Must be 3–11 badges; each requires a comment.
+    /// </summary>
+    public ICollection<OrderBadge> Badges { get; set; } = new List<OrderBadge>();
+
+    /// <summary>
+    /// Selected paid add-ons for this order.
+    /// </summary>
+    public ICollection<OrderSubmissionAddOn> SelectedAddOns { get; set; } = new List<OrderSubmissionAddOn>();
 
     /// <summary>
     /// Rejects the submission with admin feedback.

@@ -13,6 +13,8 @@ public interface IApplicationDbContext
 
     DbSet<Group> Groups { get; }
 
+    DbSet<Promotion> Promotions { get; }
+
     DbSet<GroupMember> GroupMembers { get; }
 
     DbSet<OrderSubmission> OrderSubmissions { get; }
@@ -22,6 +24,14 @@ public interface IApplicationDbContext
     DbSet<ProductOption> ProductOptions { get; }
 
     DbSet<BadgePosition> BadgePositions { get; }
+
+    DbSet<ProductColor> ProductColors { get; }
+
+    DbSet<ProductAddOn> ProductAddOns { get; }
+
+    DbSet<OrderBadge> OrderBadges { get; }
+
+    DbSet<OrderSubmissionAddOn> OrderSubmissionAddOns { get; }
 
     DbSet<Payment> Payments { get; }
 

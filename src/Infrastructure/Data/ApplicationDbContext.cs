@@ -13,6 +13,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<Group> Groups => Set<Group>();
 
+    public DbSet<Promotion> Promotions => Set<Promotion>();
+
     public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
 
     public DbSet<OrderSubmission> OrderSubmissions => Set<OrderSubmission>();
@@ -22,6 +24,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<ProductOption> ProductOptions => Set<ProductOption>();
 
     public DbSet<BadgePosition> BadgePositions => Set<BadgePosition>();
+
+    public DbSet<ProductColor> ProductColors => Set<ProductColor>();
+
+    public DbSet<ProductAddOn> ProductAddOns => Set<ProductAddOn>();
+
+    public DbSet<OrderBadge> OrderBadges => Set<OrderBadge>();
+
+    public DbSet<OrderSubmissionAddOn> OrderSubmissionAddOns => Set<OrderSubmissionAddOn>();
 
     public DbSet<Payment> Payments => Set<Payment>();
 

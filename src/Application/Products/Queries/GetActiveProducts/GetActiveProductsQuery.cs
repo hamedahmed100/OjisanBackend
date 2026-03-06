@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OjisanBackend.Application.Common.Interfaces;
+using OjisanBackend.Domain.Enums;
 
 namespace OjisanBackend.Application.Products.Queries.GetActiveProducts;
 
@@ -31,20 +32,23 @@ public class GetActiveProductsQueryHandler : IRequestHandler<GetActiveProductsQu
 
     public async Task<List<ProductBriefDto>> Handle(GetActiveProductsQuery request, CancellationToken cancellationToken)
     {
-        return await _context.Products
+        // Project only columns that translate to SQL; Type is stored as nvarchar, so avoid (int)p.Type in SQL.
+        var items = await _context.Products
             .AsNoTracking()
             .Where(p => p.IsActive)
-            .Select(p => new ProductBriefDto
-            {
-                Id = p.PublicId,
-                Name = p.Name,
-                BasePrice = p.BasePrice,
-                Type = new ProductTypeDto
-                {
-                    Value = (int)p.Type,
-                    Name = p.Type.ToString()
-                }
-            })
+            .Select(p => new { p.PublicId, p.Name, p.BasePrice, TypeName = p.Type.ToString() })
             .ToListAsync(cancellationToken);
+
+        return items.Select(p => new ProductBriefDto
+        {
+            Id = p.PublicId,
+            Name = p.Name,
+            BasePrice = p.BasePrice,
+            Type = new ProductTypeDto
+            {
+                Value = (int)Enum.Parse<ProductType>(p.TypeName),
+                Name = p.TypeName
+            }
+        }).ToList();
     }
 }

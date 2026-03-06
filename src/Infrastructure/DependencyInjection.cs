@@ -1,4 +1,5 @@
 using OjisanBackend.Application.Common.Interfaces;
+using OjisanBackend.Application.Groups.Common;
 using OjisanBackend.Domain.Constants;
 using OjisanBackend.Infrastructure.Data;
 using OjisanBackend.Infrastructure.Data.Interceptors;
@@ -8,6 +9,7 @@ using OjisanBackend.Infrastructure.Notifications;
 using OjisanBackend.Infrastructure.Payments;
 using OjisanBackend.Infrastructure.Services;
 using OjisanBackend.Infrastructure.Storage;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -39,7 +41,11 @@ public static class DependencyInjection
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
         builder.Services.AddAuthentication()
-            .AddBearerToken(IdentityConstants.BearerScheme);
+            .AddBearerToken(IdentityConstants.BearerScheme, options =>
+            {
+                options.BearerTokenExpiration = TimeSpan.FromDays(7);
+                options.RefreshTokenExpiration = TimeSpan.FromDays(30);
+            });
 
         builder.Services.AddAuthorizationBuilder();
 
@@ -57,6 +63,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IUserLookupService, UserLookupService>();
         builder.Services.AddSingleton<IInviteCodeService, InviteCodeService>();
         builder.Services.AddScoped<IImageUploadService, LocalImageUploadService>();
+        builder.Services.AddScoped<IGroupPricingService, GroupPricingService>();
 
         // Register HttpClient for Fatorah payment service
         builder.Services.AddHttpClient(nameof(FatorahPaymentService));

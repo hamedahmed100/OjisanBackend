@@ -28,7 +28,7 @@ public class RequestLoggerTests
 
         var requestLogger = new LoggingBehaviour<CreateGroupCommand>(_logger.Object, _user.Object, _identityService.Object);
 
-        await requestLogger.Process(new CreateGroupCommand { MaxMembers = 2, ProductId = 1 }, new CancellationToken());
+        await requestLogger.Process(new CreateGroupCommand { MaxMembers = 2, ProductPublicId = Guid.NewGuid() }, new CancellationToken());
 
         _identityService.Verify(i => i.GetUserNameAsync(It.IsAny<string>()), Times.Once);
     }
@@ -38,7 +38,7 @@ public class RequestLoggerTests
     {
         var requestLogger = new LoggingBehaviour<CreateGroupCommand>(_logger.Object, _user.Object, _identityService.Object);
 
-        await requestLogger.Process(new CreateGroupCommand { MaxMembers = 2, ProductId = 1 }, new CancellationToken());
+        await requestLogger.Process(new CreateGroupCommand { MaxMembers = 2, ProductPublicId = Guid.NewGuid() }, new CancellationToken());
 
         _identityService.Verify(i => i.GetUserNameAsync(It.IsAny<string>()), Times.Never);
     }

@@ -15,6 +15,7 @@ public class CustomExceptionHandler : IExceptionHandler
         _exceptionHandlers = new()
             {
                 { typeof(ValidationException), HandleValidationException },
+                { typeof(BadRequestException), HandleBadRequestException },
                 { typeof(OjisanBackend.Application.Common.Exceptions.NotFoundException), HandleNotFoundException },
                 { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
                 { typeof(ForbiddenAccessException), HandleForbiddenAccessException },
@@ -24,6 +25,8 @@ public class CustomExceptionHandler : IExceptionHandler
                 { typeof(UserNotMemberOfGroupException), HandleDomainException },
                 { typeof(DuplicateSubmissionException), HandleDomainException },
                 { typeof(SubmissionNotRejectedException), HandleDomainException },
+                { typeof(BadgeCountValidationException), HandleDomainException },
+                { typeof(BadgeCommentValidationException), HandleDomainException },
             };
     }
 
@@ -49,6 +52,19 @@ public class CustomExceptionHandler : IExceptionHandler
         await httpContext.Response.WriteAsJsonAsync(new ValidationProblemDetails(exception.Errors)
         {
             Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+        });
+    }
+
+    private async Task HandleBadRequestException(HttpContext httpContext, Exception ex)
+    {
+        var exception = (BadRequestException)ex;
+        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Bad Request",
+            Detail = exception.Message,
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
         });
     }
@@ -103,6 +119,8 @@ public class CustomExceptionHandler : IExceptionHandler
             DuplicateSubmissionException => StatusCodes.Status409Conflict,
             SubmissionNotRejectedException => StatusCodes.Status400BadRequest,
             UserNotMemberOfGroupException => StatusCodes.Status400BadRequest,
+            BadgeCountValidationException => StatusCodes.Status400BadRequest,
+            BadgeCommentValidationException => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status400BadRequest
         };
 

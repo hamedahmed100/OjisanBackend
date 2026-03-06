@@ -15,6 +15,11 @@ public class Group : BaseAuditableEntity
     /// </summary>
     public Guid PublicId { get; set; } = Guid.NewGuid();
 
+    /// <summary>
+    /// Display name for the group (e.g. "Team Alpha", "Office Order 2025").
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
     public string LeaderUserId { get; set; } = string.Empty;
 
     public int ProductId { get; set; }
@@ -22,9 +27,34 @@ public class Group : BaseAuditableEntity
     public int MaxMembers { get; set; }
 
     /// <summary>
+    /// Member count at time of creation (for pricing and discount eligibility). Must be between 2 and 30.
+    /// </summary>
+    public int MemberCount { get; set; }
+
+    /// <summary>
+    /// Whether uniform colour was selected (Jacket, Sleeves, and مطاط الاكمام same). Required for discount eligibility.
+    /// </summary>
+    public bool IsUniformColorSelected { get; set; }
+
+    /// <summary>
+    /// Discount percentage applied at creation (e.g. 15). Only set when eligible (MemberCount &gt; 5 and IsUniformColorSelected and promotion active).
+    /// </summary>
+    public decimal AppliedDiscountPercentage { get; set; }
+
+    /// <summary>
+    /// The date the promotion was no longer valid; stored to "lock in" the price at creation. Null if no discount was applied.
+    /// </summary>
+    public DateTime? DiscountExpiryDate { get; set; }
+
+    /// <summary>
     /// JSON representation of the base design (colors, materials, patterns, etc.).
     /// </summary>
     public string BaseDesignJson { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Common name behind for all members when IsUniformColorSelected is true. Null when members choose their own.
+    /// </summary>
+    public string? NameBehind { get; set; }
 
     public GroupStatus Status { get; set; } = GroupStatus.Recruiting;
 
@@ -127,32 +157,39 @@ public class Group : BaseAuditableEntity
             throw new ArgumentNullException(nameof(submission));
         }
 
-        // Ensure submission belongs to this group
         submission.GroupId ??= Id;
         if (submission.GroupId != Id)
         {
             throw new InvalidOperationException("Submission does not belong to this group.");
         }
 
-        // Business Rule 1: User must be a member of the group (either leader or joined member)
         var isMember = LeaderUserId == submission.UserId || _members.Any(m => m.UserId == submission.UserId);
         if (!isMember)
         {
             throw new UserNotMemberOfGroupException(Id, submission.UserId);
         }
 
-        // Business Rule 2: User must not have already submitted
-        if (_submissions.Any(s => s.UserId == submission.UserId))
+        var existing = _submissions.FirstOrDefault(s => s.UserId == submission.UserId);
+        if (existing != null && existing.Status != SubmissionStatus.Draft)
         {
             throw new DuplicateSubmissionException(Id, submission.UserId);
         }
 
-        // All invariants satisfied - add the submission
-        _submissions.Add(submission);
+        if (existing == null)
+        {
+            _submissions.Add(submission);
+        }
 
-        // State Machine: Check if all members have submitted
-        // Note: MaxMembers includes the leader, so we check if submissions count equals MaxMembers
-        if (Status == GroupStatus.Recruiting && _submissions.Count == MaxMembers)
+        EvaluateReadyForReview();
+    }
+
+    public void EvaluateReadyForReview()
+    {
+        if (Status != GroupStatus.Recruiting)
+            return;
+
+        var submittedCount = _submissions.Count(s => s.Status != SubmissionStatus.Draft);
+        if (submittedCount == MaxMembers)
         {
             Status = GroupStatus.ReadyForReview;
             AddDomainEvent(new GroupReadyForReviewEvent(Id));

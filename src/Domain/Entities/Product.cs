@@ -29,6 +29,11 @@ public class Product : BaseAuditableEntity
     public decimal BasePrice { get; set; }
 
     /// <summary>
+    /// Price per badge (e.g., 15 SAR). Used for total = BasePrice + (BadgeCount * BadgeUnitPrice) + Sum(AddOns).
+    /// </summary>
+    public decimal BadgeUnitPrice { get; set; } = 15;
+
+    /// <summary>
     /// Type of product (Jacket, Hoodie, Pants).
     /// </summary>
     public ProductType Type { get; set; }

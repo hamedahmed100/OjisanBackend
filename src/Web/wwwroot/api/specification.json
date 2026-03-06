@@ -5,6 +5,11 @@
     "title": "OjisanBackend API",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    }
+  ],
   "paths": {
     "/api/admin/pipeline/review": {
       "get": {
@@ -210,8 +215,204 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "guid"
+                  "$ref": "#/components/schemas/CreateGroupResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Groups/promotions/validate": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "ValidatePromotion",
+        "parameters": [
+          {
+            "name": "MemberCount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidatePromotionResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Groups/discount-eligibility": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "GetGroupDiscountEligibility",
+        "parameters": [
+          {
+            "name": "productPublicId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "memberCount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "isUniformColorSelected",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            },
+            "x-position": 3
+          },
+          {
+            "name": "addOnIds",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 4
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDiscountEligibilityResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Groups/mine": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "GetMyGroups",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyGroupDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Groups/{id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "operationId": "GetGroupDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetGroupDetailsResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -426,6 +627,127 @@
           },
           "400": {
             "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/options/colors": {
+      "get": {
+        "tags": [
+          "options"
+        ],
+        "operationId": "GetApiOptionsColors",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ColorsGroupedByTypeDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/options/add-ons": {
+      "get": {
+        "tags": [
+          "options"
+        ],
+        "operationId": "GetApiOptionsAddOns",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddOnOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/jacket": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "operationId": "CreateJacketOrder",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJacketOrderCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateJacketOrderResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/orders/mine": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "operationId": "GetMyOrders",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyOrderDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -698,6 +1020,177 @@
         ]
       }
     },
+    "/api/Users/signup": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "SignUp",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/confirm-email": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "ConfirmEmailByUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "401": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Users/signin": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "SignIn",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Users/address": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateUserAddress",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserAddressCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Users/register": {
       "post": {
         "tags": [
@@ -709,7 +1202,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
+                "$ref": "#/components/schemas/RegisterRequest2"
               }
             }
           },
@@ -1091,36 +1584,6 @@
           }
         ]
       }
-    },
-    "/api/Users/address": {
-      "put": {
-        "tags": [
-          "Users"
-        ],
-        "operationId": "UpdateUserAddress",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserAddressCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
     }
   },
   "components": {
@@ -1132,6 +1595,9 @@
           "groupId": {
             "type": "string",
             "format": "guid"
+          },
+          "name": {
+            "type": "string"
           },
           "leaderUserId": {
             "type": "string"
@@ -1245,17 +1711,106 @@
           }
         }
       },
+      "CreateGroupResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "priceBreakdown": {
+            "$ref": "#/components/schemas/GroupPriceBreakdownDto"
+          }
+        }
+      },
+      "GroupPriceBreakdownDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "originalProductPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "discountedProductPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "addonPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "subtotal": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "finalTotal": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "promotionApplied": {
+            "type": "boolean"
+          },
+          "appliedDiscountPercentage": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "additionalProperties": {
+          "nullable": true
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "CreateGroupCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "memberCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "maxMembers": {
             "type": "integer",
             "format": "int32"
           },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
+          "name": {
+            "type": "string"
+          },
+          "isUniformColorSelected": {
+            "type": "boolean"
+          },
+          "productPublicId": {
+            "type": "string",
+            "format": "guid"
           },
           "baseDesign": {
             "nullable": true,
@@ -1264,6 +1819,21 @@
                 "$ref": "#/components/schemas/BaseDesignDto"
               }
             ]
+          },
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          },
+          "addOnIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "effectiveMemberCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1285,6 +1855,261 @@
           }
         }
       },
+      "ValidatePromotionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          },
+          "promotionName": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "endDateUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "GroupDiscountEligibilityResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "isEligibleForDiscount": {
+            "type": "boolean"
+          },
+          "promotionName": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "promotionEndDateUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "MyGroupDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersJoinedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersSubmittedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isUniformColorSelected": {
+            "type": "boolean"
+          },
+          "inviteCode": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GetGroupDetailsResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GroupStatus"
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersJoinedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersSubmittedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inviteCode": {
+            "type": "string"
+          },
+          "inviteLink": {
+            "type": "string"
+          },
+          "isUniformColorSelected": {
+            "type": "boolean"
+          },
+          "baseDesignJson": {
+            "type": "string"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMemberDto"
+            }
+          },
+          "submissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupSubmissionDto"
+            }
+          }
+        }
+      },
+      "GroupStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Recruiting",
+          "ReadyForReview",
+          "Accepted",
+          "Finalized",
+          "Cancelled"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "GroupMemberDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isLeader": {
+            "type": "boolean"
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hasSubmitted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GroupSubmissionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isLeader": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "nameBehind": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupSubmissionBadgeDto"
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupSubmissionAddOnDto"
+            }
+          }
+        }
+      },
+      "GroupSubmissionBadgeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "GroupSubmissionAddOnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
       "GroupInviteInfoDto": {
         "type": "object",
         "additionalProperties": false,
@@ -1292,6 +2117,9 @@
           "publicId": {
             "type": "string",
             "format": "guid"
+          },
+          "name": {
+            "type": "string"
           },
           "leaderUserId": {
             "type": "string"
@@ -1316,24 +2144,6 @@
           }
         }
       },
-      "GroupStatus": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Recruiting",
-          "ReadyForReview",
-          "Accepted",
-          "Finalized",
-          "Cancelled"
-        ],
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ]
-      },
       "SubmitMemberDesignCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -1345,9 +2155,33 @@
           "customDesignJson": {
             "type": "string"
           },
-          "calculatedPrice": {
-            "type": "number",
-            "format": "decimal"
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberBadgeInputDto"
+            }
+          },
+          "addOnIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "nameBehind": {
+            "type": "string"
+          }
+        }
+      },
+      "MemberBadgeInputDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
           }
         }
       },
@@ -1365,6 +2199,244 @@
           },
           "newCustomDesignJson": {
             "type": "string"
+          },
+          "badges": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/MemberBadgeInputDto"
+            }
+          },
+          "addOnIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ColorsGroupedByTypeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColorOptionDto"
+            }
+          }
+        }
+      },
+      "ColorOptionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "hexCode": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "AddOnOptionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "CreateJacketOrderResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "totalPrice": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "CreateJacketOrderCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "customDesignJson": {
+            "type": "string"
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgeInputDto"
+            }
+          },
+          "addOnIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "nameBehind": {
+            "type": "string"
+          }
+        }
+      },
+      "BadgeInputDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "MyOrderDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "type": "string"
+          },
+          "isGroupOrder": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "nameBehind": {
+            "type": "string"
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MyOrderBadgeDto"
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MyOrderAddOnDto"
+            }
+          },
+          "groupInfo": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MyOrderGroupInfoDto"
+              }
+            ]
+          }
+        }
+      },
+      "MyOrderBadgeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "MyOrderAddOnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "MyOrderGroupInfoDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersJoinedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "membersSubmittedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "groupTotalPrice": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -1601,6 +2673,107 @@
           "calculatedPrice": {
             "type": "number",
             "format": "decimal"
+          },
+          "nameBehind": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterSuccessResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "SignInRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "CurrentUserResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/UserAddressResponse"
+          }
+        }
+      },
+      "UserAddressResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "district": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUserAddressCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "district": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
           }
         }
       },
@@ -1628,36 +2801,7 @@
           }
         ]
       },
-      "ProblemDetails": {
-        "type": "object",
-        "additionalProperties": {
-          "nullable": true
-        },
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
-            "type": "string",
-            "nullable": true
-          },
-          "instance": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "RegisterRequest": {
+      "RegisterRequest2": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1826,27 +2970,6 @@
           "oldPassword": {
             "type": "string",
             "nullable": true
-          }
-        }
-      },
-      "UpdateUserAddressCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "street": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "district": {
-            "type": "string"
-          },
-          "postalCode": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
           }
         }
       }

@@ -4,14 +4,20 @@ namespace OjisanBackend.Application.Submissions.Commands.SubmitMemberDesign;
 
 public class SubmitMemberDesignCommandValidator : AbstractValidator<SubmitMemberDesignCommand>
 {
+    private const int MinBadges = 3;
+    private const int MaxBadges = 11;
+
     public SubmitMemberDesignCommandValidator()
     {
-        RuleFor(v => v.CustomDesignJson)
-            .NotEmpty()
-            .WithMessage("تصميم المنتج مطلوب.");
+        RuleFor(v => v.Badges)
+            .Must(b => b.Count >= MinBadges && b.Count <= MaxBadges)
+            .WithMessage($"Badge count must be between {MinBadges} and {MaxBadges}.");
 
-        RuleFor(v => v.CalculatedPrice)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("السعر يجب أن يكون أكبر من أو يساوي صفر.");
+        RuleForEach(v => v.Badges).ChildRules(badge =>
+        {
+            badge.RuleFor(b => b.Comment)
+                .NotEmpty()
+                .WithMessage("Each badge requires a non-empty comment.");
+        });
     }
 }

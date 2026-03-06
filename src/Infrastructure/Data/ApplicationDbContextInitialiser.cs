@@ -1,5 +1,6 @@
 using OjisanBackend.Domain.Constants;
 using OjisanBackend.Domain.Entities;
+using OjisanBackend.Domain.Enums;
 using OjisanBackend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -133,31 +134,20 @@ public class ApplicationDbContextInitialiser
 
     public async Task TrySeedAsync()
     {
-        // Default roles
+        // Only Administrator is an Identity role. Group leader/member are derived from Group.LeaderUserId and GroupMember table.
         var administratorRole = new IdentityRole(Roles.Administrator);
-        var groupLeaderRole = new IdentityRole(Roles.GroupLeader);
-        var groupMemberRole = new IdentityRole(Roles.GroupMember);
 
         if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
         {
             await _roleManager.CreateAsync(administratorRole);
         }
 
-        if (_roleManager.Roles.All(r => r.Name != groupLeaderRole.Name))
-        {
-            await _roleManager.CreateAsync(groupLeaderRole);
-        }
-
-        if (_roleManager.Roles.All(r => r.Name != groupMemberRole.Name))
-        {
-            await _roleManager.CreateAsync(groupMemberRole);
-        }
-
         // Default admin user
         var administrator = new ApplicationUser
         {
             UserName = "OjiAdmin",
-            Email = "OjiAdmin"
+            Email = "OjiAdmin@gmail.com",
+            EmailConfirmed = true
         };
 
         if (_userManager.Users.All(u => u.UserName != administrator.UserName))
@@ -169,7 +159,45 @@ public class ApplicationDbContextInitialiser
             }
         }
 
-        // Default data
-        // Seed, if necessary
+        // Default Jacket product (base price 255 SAR, badge unit price 15 SAR)
+        var jacketProduct = new Product
+        {
+            Name = "Single Order Jacket",
+            Description = "Customizable jacket with badges and add-ons",
+            BasePrice = 255,
+            BadgeUnitPrice = 15,
+            Type = ProductType.Jacket,
+            IsActive = true
+        };
+        if (!_context.Products.Any(p => p.Type == ProductType.Jacket && p.Name == jacketProduct.Name))
+        {
+            _context.Products.Add(jacketProduct);
+            await _context.SaveChangesAsync(); // Persist jacket so ProductId is available if needed
+        }
+
+        // ProductColor seed: 7 colors × 3 types (Jacket, Sleeve, Elastic)
+        var colorData = new[] { ("برغندي", "Burgundy", "#BB7875"), ("كحلي", "Navy / Dark Blue", "#8D8FB8"), ("زيتي غامق", "Dark Olive", "#D0CD9E"), ("وردي", "Pink", "#FBD3E2"), ("أسود", "Black", "#898989"), ("رمادي", "Grey", "#BCBCBC"), ("رصاصي", "Lead / Light Grey", "#EAEAEA") };
+        foreach (var (nameAr, nameEn, hexCode) in colorData)
+        {
+            foreach (ColorType type in Enum.GetValues<ColorType>())
+            {
+                if (!_context.ProductColors.Any(pc => pc.NameEn == nameEn && pc.Type == type))
+                {
+                    _context.ProductColors.Add(new ProductColor { NameAr = nameAr, NameEn = nameEn, HexCode = hexCode, Type = type });
+                }
+            }
+        }
+
+        // ProductAddOn seed
+        var addOnData = new[] { ("قبعة ثابتة", "Fixed Hood", 35m), ("جلد كامل", "Full Leather", 50m), ("تطريز بطانة", "Lining Embroidery", 35m) };
+        foreach (var (nameAr, nameEn, price) in addOnData)
+        {
+            if (!_context.ProductAddOns.Any(pa => pa.NameEn == nameEn))
+            {
+                _context.ProductAddOns.Add(new ProductAddOn { NameAr = nameAr, NameEn = nameEn, Price = price });
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

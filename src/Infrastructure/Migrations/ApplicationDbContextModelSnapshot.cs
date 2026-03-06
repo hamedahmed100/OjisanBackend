@@ -204,6 +204,10 @@ namespace OjisanBackend.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("AppliedDiscountPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<string>("BaseDesignJson")
                         .IsRequired()
                         .HasMaxLength(4000)
@@ -215,10 +219,16 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DiscountExpiryDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("InviteCode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsUniformColorSelected")
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("datetimeoffset");
@@ -233,6 +243,18 @@ namespace OjisanBackend.Infrastructure.Migrations
 
                     b.Property<int>("MaxMembers")
                         .HasColumnType("int");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameBehind")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -307,6 +329,46 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.ToTable("GroupMembers");
                 });
 
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderBadge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderSubmissionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderSubmissionId");
+
+                    b.ToTable("OrderBadges");
+                });
+
             modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderSubmission", b =>
                 {
                     b.Property<int>("Id")
@@ -341,6 +403,9 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("NameBehind")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
@@ -362,6 +427,38 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.HasIndex("GroupId", "UserId");
 
                     b.ToTable("OrderSubmissions");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderSubmissionAddOn", b =>
+                {
+                    b.Property<int>("OrderSubmissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductAddOnId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("OrderSubmissionId", "ProductAddOnId");
+
+                    b.HasIndex("OrderSubmissionId");
+
+                    b.HasIndex("ProductAddOnId");
+
+                    b.ToTable("OrderSubmissionAddOns");
                 });
 
             modelBuilder.Entity("OjisanBackend.Domain.Entities.Payment", b =>
@@ -429,6 +526,10 @@ namespace OjisanBackend.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("BadgeUnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("BasePrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -469,6 +570,100 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.ProductAddOn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductAddOns");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.ProductColor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HexCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("ProductColors");
                 });
 
             modelBuilder.Entity("OjisanBackend.Domain.Entities.ProductOption", b =>
@@ -516,6 +711,55 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.HasIndex("ProductId", "Category");
 
                     b.ToTable("ProductOptions");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.Promotion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MinGroupSize")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PromotionName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive", "StartDate", "EndDate")
+                        .HasFilter("[IsActive] = 1");
+
+                    b.ToTable("Promotions");
                 });
 
             modelBuilder.Entity("OjisanBackend.Domain.Entities.UserAddress", b =>
@@ -710,12 +954,52 @@ namespace OjisanBackend.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderBadge", b =>
+                {
+                    b.HasOne("OjisanBackend.Domain.Entities.OrderSubmission", "OrderSubmission")
+                        .WithMany("Badges")
+                        .HasForeignKey("OrderSubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrderSubmission");
+                });
+
             modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderSubmission", b =>
                 {
                     b.HasOne("OjisanBackend.Domain.Entities.Group", null)
                         .WithMany("Submissions")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderSubmissionAddOn", b =>
+                {
+                    b.HasOne("OjisanBackend.Domain.Entities.OrderSubmission", "OrderSubmission")
+                        .WithMany("SelectedAddOns")
+                        .HasForeignKey("OrderSubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OjisanBackend.Domain.Entities.ProductAddOn", "ProductAddOn")
+                        .WithMany()
+                        .HasForeignKey("ProductAddOnId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OrderSubmission");
+
+                    b.Navigation("ProductAddOn");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.ProductAddOn", b =>
+                {
+                    b.HasOne("OjisanBackend.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("OjisanBackend.Domain.Entities.ProductOption", b =>
@@ -732,6 +1016,13 @@ namespace OjisanBackend.Infrastructure.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("OjisanBackend.Domain.Entities.OrderSubmission", b =>
+                {
+                    b.Navigation("Badges");
+
+                    b.Navigation("SelectedAddOns");
                 });
 
             modelBuilder.Entity("OjisanBackend.Domain.Entities.Product", b =>

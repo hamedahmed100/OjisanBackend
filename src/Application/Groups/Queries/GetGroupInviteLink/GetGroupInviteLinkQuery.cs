@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using OjisanBackend.Application.Common.Interfaces;
 using OjisanBackend.Domain.Entities;
 
@@ -15,12 +14,10 @@ public record GetGroupInviteLinkQuery : IRequest<string>
 public class GetGroupInviteLinkQueryHandler : IRequestHandler<GetGroupInviteLinkQuery, string>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IConfiguration _configuration;
 
-    public GetGroupInviteLinkQueryHandler(IApplicationDbContext context, IConfiguration configuration)
+    public GetGroupInviteLinkQueryHandler(IApplicationDbContext context)
     {
         _context = context;
-        _configuration = configuration;
     }
 
     public async Task<string> Handle(GetGroupInviteLinkQuery request, CancellationToken cancellationToken)
@@ -36,11 +33,6 @@ public class GetGroupInviteLinkQueryHandler : IRequestHandler<GetGroupInviteLink
                 nameof(Group), request.GroupId);
         }
 
-        var frontendBaseUrl = _configuration["FrontendBaseUrl"] 
-            ?? throw new InvalidOperationException("FrontendBaseUrl is not configured in appsettings.json");
-
-        // Ensure the URL doesn't end with a slash
-        var baseUrl = frontendBaseUrl.TrimEnd('/');
-        return $"{baseUrl}/join/{group.InviteCode}";
+        return group.InviteCode;
     }
 }

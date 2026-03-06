@@ -1,4 +1,4 @@
-﻿<!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
+<!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
 <Project>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,5 +6,7 @@
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Required for dotnet ef when using ArtifactsPath / centralized obj output -->
+    <MSBuildProjectExtensionsPath>$(ArtifactsPath)\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
   </PropertyGroup>
 </Project>
