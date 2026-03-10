@@ -35,7 +35,7 @@ public class S3ImageUploadService : IImageUploadService
         return await _storage.UploadAsync(
             imageStream,
             fileName,
-            contentType,
+            contentType ?? "application/octet-stream",
             BadgesFolder,
             cancellationToken);
     }

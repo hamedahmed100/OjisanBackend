@@ -32,7 +32,7 @@ public class S3MediaLibraryFileService : IMediaLibraryFileService
             throw new ArgumentException("Invalid file extension. Only PNG and JPEG are allowed.", nameof(fileName));
         }
 
-        return await _storage.UploadAsync(content, fileName, contentType, LibrariesFolder, cancellationToken);
+        return await _storage.UploadAsync(content, fileName, contentType ?? "application/octet-stream", LibrariesFolder, cancellationToken);
     }
 
     public Task DeleteFileAsync(string relativePath, CancellationToken cancellationToken)
