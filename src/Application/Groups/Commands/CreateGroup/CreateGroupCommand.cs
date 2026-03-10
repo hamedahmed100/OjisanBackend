@@ -52,7 +52,7 @@ public record CreateGroupCommand : IRequest<CreateGroupResult>
     public BaseDesignDto? BaseDesign { get; init; }
 
     /// <summary>
-    /// Common name behind for all members. Required when IsUniformColorSelected is true.
+    /// Optional common name behind for all members (used when IsUniformColorSelected is true).
     /// </summary>
     public string? NameBehind { get; init; }
 

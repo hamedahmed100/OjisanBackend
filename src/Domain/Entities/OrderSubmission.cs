@@ -13,9 +13,14 @@ public class OrderSubmission : BaseAuditableEntity
     public Guid PublicId { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// Foreign key to the Group entity. Nullable for future single orders.
+    /// Foreign key to the Group entity. Nullable for single orders.
     /// </summary>
     public int? GroupId { get; set; }
+
+    /// <summary>
+    /// Foreign key to the Product entity. Set for single orders; for group orders use Group.ProductId.
+    /// </summary>
+    public int? ProductId { get; set; }
 
     /// <summary>
     /// User ID of the member who submitted the design.
@@ -54,7 +59,7 @@ public class OrderSubmission : BaseAuditableEntity
     public string? AdminFeedback { get; set; }
 
     /// <summary>
-    /// Badges for this jacket order. Must be 3–11 badges; each requires a comment.
+    /// Badges for this jacket order. Must be 3–12 badges; comments may be empty for single orders.
     /// </summary>
     public ICollection<OrderBadge> Badges { get; set; } = new List<OrderBadge>();
 
@@ -62,6 +67,26 @@ public class OrderSubmission : BaseAuditableEntity
     /// Selected paid add-ons for this order.
     /// </summary>
     public ICollection<OrderSubmissionAddOn> SelectedAddOns { get; set; } = new List<OrderSubmissionAddOn>();
+
+    /// <summary>
+    /// For single orders: whether payment has been completed.
+    /// </summary>
+    public bool IsPaid { get; set; }
+
+    /// <summary>
+    /// For single orders: OTO tracking number when label is generated.
+    /// </summary>
+    public string? TrackingNumber { get; set; }
+
+    /// <summary>
+    /// For single orders: URL to the OTO shipping label PDF.
+    /// </summary>
+    public string? ShippingLabelUrl { get; set; }
+
+    /// <summary>
+    /// For single orders: when the order was marked as shipped/delivered.
+    /// </summary>
+    public DateTime? ShippedAt { get; set; }
 
     /// <summary>
     /// Rejects the submission with admin feedback.
@@ -78,6 +103,7 @@ public class OrderSubmission : BaseAuditableEntity
 
         Status = SubmissionStatus.Rejected;
         AdminFeedback = feedback;
+        UnlockEdit(); // Allow member to edit and resubmit
 
         // Raise domain event for notification service
         AddDomainEvent(new SubmissionRejectedEvent(PublicId, UserId, feedback));
@@ -141,6 +167,45 @@ public class OrderSubmission : BaseAuditableEntity
     {
         Status = SubmissionStatus.ReadyForReview;
         AddDomainEvent(new SingleOrderReadyForReviewEvent(Id));
+    }
+
+    /// <summary>
+    /// Resubmits a rejected single order after the user has addressed admin feedback.
+    /// Sets status back to ReadyForReview and clears feedback. Call only for single orders (GroupId == null).
+    /// </summary>
+    public void ResubmitAfterRejection()
+    {
+        if (GroupId != null)
+        {
+            throw new InvalidOperationException("ResubmitAfterRejection is for single orders only. Use UpdateDesign for group submissions.");
+        }
+
+        if (Status != SubmissionStatus.Rejected)
+        {
+            throw new InvalidOperationException($"Cannot resubmit: submission is not in Rejected status. Current status: {Status}.");
+        }
+
+        Status = SubmissionStatus.ReadyForReview;
+        AdminFeedback = null;
+        LockEdit(); // Lock until next admin review
+    }
+
+    /// <summary>
+    /// Marks a single (non-group) order as shipped/delivered. Call when carrier confirms delivery.
+    /// </summary>
+    public void MarkAsShipped()
+    {
+        if (GroupId != null)
+        {
+            throw new InvalidOperationException("Use Group.MarkAsShipped for group orders.");
+        }
+
+        if (!IsPaid)
+        {
+            throw new InvalidOperationException("Order must be paid before marking as shipped.");
+        }
+
+        ShippedAt = DateTime.UtcNow;
     }
 }
 

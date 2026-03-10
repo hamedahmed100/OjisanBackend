@@ -80,6 +80,11 @@ public class Group : BaseAuditableEntity
     public string? ShippingLabelUrl { get; set; }
 
     /// <summary>
+    /// When the order was marked as shipped/delivered. Null until admin marks it.
+    /// </summary>
+    public DateTime? ShippedAt { get; set; }
+
+    /// <summary>
     /// Read-only collection of group members.
     /// Members are managed through the AddMember method to enforce business rules.
     /// </summary>
@@ -199,9 +204,26 @@ public class Group : BaseAuditableEntity
     /// <summary>
     /// Evaluates the group status based on submission states.
     /// If all submissions are accepted, the group status changes to Accepted.
+    /// If all submissions are rejected, the group status changes to Rejected.
+    /// If group was Rejected and a member resubmits, the group returns to ReadyForReview.
     /// </summary>
     public void EvaluateGroupStatus()
     {
+        if (_submissions.Count == 0)
+        {
+            return;
+        }
+
+        // Group was Rejected: when at least one submission is no longer Rejected, return to ReadyForReview
+        if (Status == GroupStatus.Rejected)
+        {
+            if (_submissions.Any(s => s.Status != SubmissionStatus.Rejected))
+            {
+                Status = GroupStatus.ReadyForReview;
+            }
+            return;
+        }
+
         // Only evaluate if group is in ReadyForReview status
         if (Status != GroupStatus.ReadyForReview)
         {
@@ -209,10 +231,18 @@ public class Group : BaseAuditableEntity
         }
 
         // Check if all submissions are accepted
-        if (_submissions.Count > 0 && _submissions.All(s => s.Status == SubmissionStatus.Accepted))
+        if (_submissions.All(s => s.Status == SubmissionStatus.Accepted))
         {
             Status = GroupStatus.Accepted;
             AddDomainEvent(new GroupAcceptedEvent(Id));
+            return;
+        }
+
+        // Check if all submissions are rejected
+        if (_submissions.All(s => s.Status == SubmissionStatus.Rejected))
+        {
+            Status = GroupStatus.Rejected;
+            AddDomainEvent(new GroupRejectedEvent(Id));
         }
     }
 
@@ -236,6 +266,19 @@ public class Group : BaseAuditableEntity
         }
 
         Status = GroupStatus.Finalized;
+    }
+
+    /// <summary>
+    /// Marks the order as shipped/delivered. Call when carrier confirms delivery.
+    /// </summary>
+    public void MarkAsShipped()
+    {
+        if (Status != GroupStatus.Finalized)
+        {
+            throw new InvalidOperationException($"Group {Id} cannot be marked as shipped. Current status: {Status}. Expected: Finalized.");
+        }
+
+        ShippedAt = DateTime.UtcNow;
     }
 }
 

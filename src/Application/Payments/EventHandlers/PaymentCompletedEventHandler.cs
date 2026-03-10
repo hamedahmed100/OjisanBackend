@@ -44,11 +44,27 @@ public class PaymentCompletedEventHandler : INotificationHandler<PaymentComplete
 
     public async Task Handle(PaymentCompletedEvent notification, CancellationToken cancellationToken)
     {
-        // Fetch the group with all related data
+        if (notification.GroupId.HasValue)
+        {
+            await HandleGroupPaymentAsync(notification, cancellationToken);
+        }
+        else if (notification.OrderSubmissionId.HasValue)
+        {
+            await HandleSingleOrderPaymentAsync(notification, cancellationToken);
+        }
+        else
+        {
+            _logger.LogWarning("PaymentCompletedEvent {PaymentId} has neither GroupId nor OrderSubmissionId",
+                notification.PaymentPublicId);
+        }
+    }
+
+    private async Task HandleGroupPaymentAsync(PaymentCompletedEvent notification, CancellationToken cancellationToken)
+    {
         var group = await _context.Groups
             .Include(g => g.Submissions)
             .Include(g => g.Members)
-            .FirstOrDefaultAsync(g => g.Id == notification.GroupId, cancellationToken);
+            .FirstOrDefaultAsync(g => g.Id == notification.GroupId!.Value, cancellationToken);
 
         if (group == null)
         {
@@ -127,6 +143,7 @@ public class PaymentCompletedEventHandler : INotificationHandler<PaymentComplete
             var shippingDetails = new ShippingDetailsDto
             {
                 GroupId = group.PublicId,
+                OrderSubmissionId = null,
                 RecipientName = recipientName,
                 PhoneNumber = phoneNumber,
                 AddressLine1 = addressLine1,
@@ -245,6 +262,154 @@ public class PaymentCompletedEventHandler : INotificationHandler<PaymentComplete
         }
 
         // Save all updates (including status change to Finalized)
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task HandleSingleOrderPaymentAsync(PaymentCompletedEvent notification, CancellationToken cancellationToken)
+    {
+        var submission = await _context.OrderSubmissions
+            .Include(s => s.Badges)
+            .FirstOrDefaultAsync(s => s.Id == notification.OrderSubmissionId!.Value, cancellationToken);
+
+        if (submission == null)
+        {
+            _logger.LogWarning("OrderSubmission {OrderSubmissionId} not found for PaymentCompletedEvent {PaymentId}",
+                notification.OrderSubmissionId, notification.PaymentPublicId);
+            return;
+        }
+
+        if (submission.GroupId != null)
+        {
+            _logger.LogWarning("OrderSubmission {Id} has GroupId; use group payment flow", submission.Id);
+            return;
+        }
+
+        var product = submission.ProductId.HasValue
+            ? await _context.Products.FirstOrDefaultAsync(p => p.Id == submission.ProductId.Value, cancellationToken)
+            : null;
+
+        // Create Trello card for single order
+        if (product != null)
+        {
+            try
+            {
+                var orderDetails = new OrderDetailsDto
+                {
+                    GroupId = submission.PublicId,
+                    LeaderUserId = submission.UserId,
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    MaxMembers = 1,
+                    MemberSubmissions = new List<MemberSubmissionDto>
+                    {
+                        new()
+                        {
+                            UserId = submission.UserId,
+                            BadgeImageUrl = ExtractBadgeImageUrl(submission.CustomDesignJson),
+                            CustomDesignJson = submission.CustomDesignJson,
+                            Price = submission.Price
+                        }
+                    }
+                };
+
+                var trelloCardId = await _trelloService.CreateCardAsync(orderDetails, cancellationToken);
+                _logger.LogInformation("Trello card created for single order {SubmissionId}. Card ID: {CardId}",
+                    submission.PublicId, trelloCardId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create Trello card for single order {SubmissionId}", submission.PublicId);
+            }
+        }
+
+        // Generate OTO shipping label
+        try
+        {
+            var userForShipping = await _userLookupService.GetUserDetailsAsync(submission.UserId, cancellationToken);
+            var address = await _context.UserAddresses
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.UserId == submission.UserId, cancellationToken);
+
+            var recipientName = userForShipping?.UserName ?? "Customer";
+            var phoneNumber = address?.PhoneNumber ?? userForShipping?.PhoneNumber ?? "+966500000000";
+            var addressLine1 = address?.Street ?? "123 Main Street";
+            var city = address?.City ?? "Riyadh";
+            var district = address?.District ?? "Al Olaya";
+            var postalCode = address?.PostalCode ?? "12345";
+
+            var shippingDetails = new ShippingDetailsDto
+            {
+                GroupId = null,
+                OrderSubmissionId = submission.PublicId,
+                RecipientName = recipientName,
+                PhoneNumber = phoneNumber,
+                AddressLine1 = addressLine1,
+                City = city,
+                District = district,
+                PostalCode = postalCode,
+                ItemCount = 1,
+                TotalValue = submission.Price
+            };
+
+            var shippingResult = await _shippingService.GenerateLabelAsync(shippingDetails, cancellationToken);
+            submission.TrackingNumber = shippingResult.TrackingNumber;
+            submission.ShippingLabelUrl = shippingResult.ShippingLabelUrl;
+
+            _logger.LogInformation("OTO shipping label generated for single order {SubmissionId}. Tracking: {TrackingNumber}",
+                submission.PublicId, shippingResult.TrackingNumber);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate OTO shipping label for single order {SubmissionId}", submission.PublicId);
+        }
+
+        submission.IsPaid = true;
+
+        // Send notification
+        var user = await _userLookupService.GetUserDetailsAsync(submission.UserId, cancellationToken);
+        if (user != null)
+        {
+            var payment = await _context.Payments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PublicId == notification.PaymentPublicId, cancellationToken);
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                try
+                {
+                    var subject = "تم تأكيد الدفع - Payment Confirmed";
+                    var body = $@"
+                        <html>
+                        <body dir=""rtl"" style=""font-family: Arial, sans-serif;"">
+                            <h2>مرحباً {user.UserName},</h2>
+                            <p>تم تأكيد الدفع بنجاح! طلبك الآن في مرحلة الإنتاج.</p>
+                            <p>Hello {user.UserName},</p>
+                            <p>Payment has been confirmed successfully! Your order is now in production.</p>
+                            <div style=""background-color: #f5f5f5; padding: 15px; margin: 20px 0;"">
+                                <h3>تفاصيل الدفع - Payment Details:</h3>
+                                <p>Transaction ID: <strong>{payment?.TransactionId ?? "N/A"}</strong></p>
+                                <p>Amount: <strong>{payment?.Amount:C}</strong></p>
+                            </div>
+                            {(string.IsNullOrWhiteSpace(submission.TrackingNumber) ? "" : $@"
+                            <div style=""background-color: #e8f5e9; padding: 15px; margin: 20px 0;"">
+                                <h3>معلومات الشحن - Shipping Information:</h3>
+                                <p>Tracking Number: <strong>{submission.TrackingNumber}</strong></p>
+                            </div>")}
+                            <br/>
+                            <p>شكراً لك - Thank you</p>
+                            <p>فريق Ojisan Store</p>
+                        </body>
+                        </html>";
+
+                    await _emailService.SendEmailAsync(user.Email, subject, body, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send payment confirmation email for single order {SubmissionId}", submission.PublicId);
+                }
+            }
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
     }
 

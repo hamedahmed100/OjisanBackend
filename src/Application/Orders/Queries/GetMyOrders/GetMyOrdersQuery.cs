@@ -2,8 +2,67 @@ using Ardalis.GuardClauses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OjisanBackend.Application.Common.Interfaces;
+using OjisanBackend.Domain.Entities;
+using OjisanBackend.Domain.Enums;
 
 namespace OjisanBackend.Application.Orders.Queries.GetMyOrders;
+
+/// <summary>
+/// Unified order display status for both group and single orders.
+/// Flow: Submitted → ReadyForReview → Accepted → Paid → Processing → Shipping → Shipped
+/// </summary>
+public static class OrderDisplayStatus
+{
+    public const string Submitted = "Submitted";
+    public const string ReadyForReview = "ReadyForReview";
+    public const string Accepted = "Accepted";
+    public const string Paid = "Paid";
+    public const string Processing = "Processing";
+    public const string Shipping = "Shipping";
+    public const string Shipped = "Shipped";
+    public const string Rejected = "Rejected";
+
+    /// <summary>
+    /// Maps group order or single order to unified display status.
+    /// </summary>
+    public static string ForOrder(OrderSubmission submission, Group? group)
+    {
+        if (group != null)
+        {
+            return group.Status switch
+            {
+                GroupStatus.Recruiting => Submitted,
+                GroupStatus.ReadyForReview => ReadyForReview,
+                GroupStatus.Accepted => Accepted,
+                GroupStatus.Finalized => group.ShippedAt.HasValue ? Shipped
+                    : !string.IsNullOrWhiteSpace(group.TrackingNumber) ? Shipping
+                    : Processing,
+                GroupStatus.Cancelled => Rejected,
+                GroupStatus.Rejected => Rejected,
+                _ => submission.Status.ToString()
+            };
+        }
+
+        // Single order
+        if (submission.Status == SubmissionStatus.Accepted)
+        {
+            if (submission.ShippedAt.HasValue) return Shipped;
+            if (!string.IsNullOrWhiteSpace(submission.TrackingNumber)) return Shipping;
+            if (submission.IsPaid) return Paid;
+            return Accepted;
+        }
+
+        return submission.Status switch
+        {
+            SubmissionStatus.Draft => Submitted,
+            SubmissionStatus.ReadyForReview => ReadyForReview,
+            SubmissionStatus.Submitted => Submitted,
+            SubmissionStatus.Rejected => Rejected,
+            SubmissionStatus.Accepted => Accepted,
+            _ => submission.Status.ToString()
+        };
+    }
+}
 
 public record MyOrderBadgeDto
 {
@@ -27,6 +86,8 @@ public record MyOrderGroupInfoDto
     public int MembersJoinedCount { get; init; }
     public int MembersSubmittedCount { get; init; }
     public decimal GroupTotalPrice { get; init; }
+    /// <summary>Group status (0=Recruiting, 1=ReadyForReview, 2=Accepted, 3=Finalized).</summary>
+    public int GroupStatus { get; init; }
 }
 
 public record MyOrderDto
@@ -92,7 +153,7 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<My
             if (s.GroupId != null && groupLookup.TryGetValue(s.GroupId.Value, out var group))
             {
                 var submittedSubmissions = group.Submissions
-                    .Where(sub => sub.Status != Domain.Enums.SubmissionStatus.Draft)
+                    .Where(sub => sub.Status != SubmissionStatus.Draft)
                     .ToList();
 
                 groupInfo = new MyOrderGroupInfoDto
@@ -102,15 +163,18 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<My
                     MaxMembers = group.MaxMembers,
                     MembersJoinedCount = 1 + group.Members.Count,
                     MembersSubmittedCount = submittedSubmissions.Count,
-                    GroupTotalPrice = submittedSubmissions.Sum(sub => sub.Price)
+                    GroupTotalPrice = submittedSubmissions.Sum(sub => sub.Price),
+                    GroupStatus = (int)group.Status
                 };
             }
+
+            var displayStatus = OrderDisplayStatus.ForOrder(s, s.GroupId != null && groupLookup.TryGetValue(s.GroupId.Value, out var g) ? g : null);
 
             return new MyOrderDto
             {
                 Id = s.PublicId,
                 Price = s.Price,
-                Status = s.Status.ToString(),
+                Status = displayStatus,
                 IsGroupOrder = s.GroupId != null,
                 CreatedAt = s.Created,
                 CustomDesignJson = s.CustomDesignJson,

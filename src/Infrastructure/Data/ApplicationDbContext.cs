@@ -37,6 +37,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
 
+    public DbSet<MediaLibrary> MediaLibraries => Set<MediaLibrary>();
+
+    public DbSet<MediaLibraryImage> MediaLibraryImages => Set<MediaLibraryImage>();
+
+    public DbSet<ProductMediaLibrary> ProductMediaLibraries => Set<ProductMediaLibrary>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

@@ -6,6 +6,10 @@ public enum GroupStatus
     ReadyForReview = 1,
     Accepted = 2,
     Finalized = 3,
-    Cancelled = 4
+    Cancelled = 4,
+    /// <summary>
+    /// All members rejected; group stays in this state until members resubmit.
+    /// </summary>
+    Rejected = 5
 }
 

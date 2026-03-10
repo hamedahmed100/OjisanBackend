@@ -11,12 +11,12 @@
     }
   ],
   "paths": {
-    "/api/admin/pipeline/review": {
+    "/api/admin/media-libraries": {
       "get": {
         "tags": [
-          "admin/pipeline"
+          "admin/media-libraries"
         ],
-        "operationId": "GetGroupsInReview",
+        "operationId": "GetAllMediaLibraries",
         "responses": {
           "200": {
             "description": "",
@@ -25,8 +25,270 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/GroupInReviewDto"
+                    "$ref": "#/components/schemas/AdminMediaLibraryDto"
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin/media-libraries"
+        ],
+        "operationId": "CreateMediaLibrary",
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMediaLibraryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/media-libraries/{id}": {
+      "get": {
+        "tags": [
+          "admin/media-libraries"
+        ],
+        "operationId": "GetMediaLibraryDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMediaLibraryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/media-libraries/{id}/images": {
+      "put": {
+        "tags": [
+          "admin/media-libraries"
+        ],
+        "operationId": "AddImages",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaLibraryImageDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/media-libraries/{id}/images/{imageId}": {
+      "delete": {
+        "tags": [
+          "admin/media-libraries"
+        ],
+        "operationId": "DeleteImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/review": {
+      "get": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "GetAllSubmissionsUnderReview",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminKanbanBoardResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/submissions/{submissionId}/preview": {
+      "get": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "GetSubmissionPreview",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubmissionPreviewResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/groups/{groupId}/preview": {
+      "get": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "GetGroupPreview",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetGroupPreviewResponse"
                 }
               }
             }
@@ -78,6 +340,129 @@
           },
           "required": true,
           "x-position": 3
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/groups/{groupId}/review-batch": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "ReviewGroupBatch",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewGroupBatchCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/submissions/{submissionId}/accept": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "AcceptSingleSubmission",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/submissions/{submissionId}/reject": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "RejectSingleSubmission",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectSingleSubmissionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
         },
         "responses": {
           "204": {
@@ -182,6 +567,237 @@
           },
           "400": {
             "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/groups/{id}/mark-shipped": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "MarkGroupAsShipped",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pipeline/submissions/{id}/mark-shipped": {
+      "put": {
+        "tags": [
+          "admin/pipeline"
+        ],
+        "operationId": "MarkSubmissionAsShipped",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "admin/users"
+        ],
+        "operationId": "GetUsers",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminUserSummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}": {
+      "get": {
+        "tags": [
+          "admin/users"
+        ],
+        "operationId": "GetUserDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}/status": {
+      "put": {
+        "tags": [
+          "admin/users"
+        ],
+        "operationId": "UpdateUserStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserStatusRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}/role": {
+      "put": {
+        "tags": [
+          "admin/users"
+        ],
+        "operationId": "UpdateUserRole",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -976,6 +1592,51 @@
         ]
       }
     },
+    "/api/submissions/{submissionId}/resubmit": {
+      "put": {
+        "tags": [
+          "submissions"
+        ],
+        "operationId": "ResubmitSingleOrder",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResubmitSingleOrderCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Uploads/badge": {
       "post": {
         "tags": [
@@ -1018,6 +1679,41 @@
             "JWT": []
           }
         ]
+      }
+    },
+    "/api/user/products/{productId}/media-libraries": {
+      "get": {
+        "tags": [
+          "user/products"
+        ],
+        "operationId": "GetMediaLibrariesForProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaLibraryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/Users/signup": {
@@ -1588,7 +2284,297 @@
   },
   "components": {
     "schemas": {
-      "GroupInReviewDto": {
+      "AdminMediaLibraryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminMediaLibraryProductDto"
+            }
+          },
+          "totalImageCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaLibraryImageDto"
+            }
+          }
+        }
+      },
+      "AdminMediaLibraryProductDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaLibraryImageDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "originalFileName": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateMediaLibraryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaLibraryImageDto"
+            }
+          }
+        }
+      },
+      "AdminKanbanBoardResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminKanbanColumnDto"
+            }
+          }
+        }
+      },
+      "AdminKanbanColumnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminKanbanCardDto"
+            }
+          }
+        }
+      },
+      "AdminKanbanCardDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "columnId": {
+            "type": "string"
+          },
+          "badgeImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "inviteCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "currentSubmissions": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isPaid": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingLabelUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "GetSubmissionPreviewResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusText": {
+            "type": "string"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "adminFeedback": {
+            "type": "string",
+            "nullable": true
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionPreviewBadgeDto"
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionPreviewAddOnDto"
+            }
+          },
+          "groupContext": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SubmissionPreviewGroupContextDto"
+              }
+            ]
+          }
+        }
+      },
+      "SubmissionPreviewBadgeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmissionPreviewAddOnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "addOnId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "SubmissionPreviewGroupContextDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "inviteCode": {
+            "type": "string"
+          },
+          "maxMembers": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GetGroupPreviewResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1602,9 +2588,8 @@
           "leaderUserId": {
             "type": "string"
           },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
+          "inviteCode": {
+            "type": "string"
           },
           "maxMembers": {
             "type": "integer",
@@ -1614,18 +2599,36 @@
             "type": "integer",
             "format": "int32"
           },
-          "inviteCode": {
+          "isUniformColorSelected": {
+            "type": "boolean"
+          },
+          "baseDesignJson": {
             "type": "string"
           },
-          "submissions": {
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusText": {
+            "type": "string"
+          },
+          "totalPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "members": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SubmissionSummaryDto"
+              "$ref": "#/components/schemas/GroupPreviewMemberDto"
             }
           }
         }
       },
-      "SubmissionSummaryDto": {
+      "GroupPreviewMemberDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1636,36 +2639,77 @@
           "userId": {
             "type": "string"
           },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusText": {
+            "type": "string"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          },
           "price": {
             "type": "number",
             "format": "decimal"
           },
-          "status": {
-            "$ref": "#/components/schemas/SubmissionStatus"
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           },
-          "badgeImageUrl": {
+          "adminFeedback": {
             "type": "string",
             "nullable": true
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupPreviewMemberBadgeDto"
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupPreviewMemberAddOnDto"
+            }
           }
         }
       },
-      "SubmissionStatus": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Draft",
-          "ReadyForReview",
-          "Submitted",
-          "Rejected",
-          "Accepted"
-        ],
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ]
+      "GroupPreviewMemberBadgeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "GroupPreviewMemberAddOnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "addOnId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
       },
       "ReviewSubmissionCommand": {
         "type": "object",
@@ -1685,6 +2729,52 @@
           "feedback": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "ReviewGroupBatchCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewDecisionDto"
+            }
+          }
+        }
+      },
+      "ReviewDecisionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "isApproved": {
+            "type": "boolean"
+          },
+          "feedback": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RejectSingleSubmissionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "feedback": {
+            "type": "string"
           }
         }
       },
@@ -1708,6 +2798,91 @@
           "groupId": {
             "type": "string",
             "format": "guid"
+          }
+        }
+      },
+      "AdminUserSummaryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "memberSince": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "AdminUserDetailsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "memberSince": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateUserStatusRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateUserRoleRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string"
           }
         }
       },
@@ -2000,14 +3175,16 @@
           "ReadyForReview",
           "Accepted",
           "Finalized",
-          "Cancelled"
+          "Cancelled",
+          "Rejected"
         ],
         "enum": [
           0,
           1,
           2,
           3,
-          4
+          4,
+          5
         ]
       },
       "GroupMemberDto": {
@@ -2437,6 +3614,10 @@
           "groupTotalPrice": {
             "type": "number",
             "format": "decimal"
+          },
+          "groupStatus": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -2446,7 +3627,13 @@
         "properties": {
           "groupId": {
             "type": "string",
-            "format": "guid"
+            "format": "guid",
+            "nullable": true
+          },
+          "orderSubmissionId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
           }
         }
       },
@@ -2676,6 +3863,74 @@
           },
           "nameBehind": {
             "type": "string"
+          }
+        }
+      },
+      "ResubmitSingleOrderCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "customDesignJson": {
+            "type": "string"
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResubmitBadgeInputDto"
+            }
+          },
+          "addOnIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "nameBehind": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ResubmitBadgeInputDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "imageUrl": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaLibraryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaLibraryImageDto"
+            }
           }
         }
       },

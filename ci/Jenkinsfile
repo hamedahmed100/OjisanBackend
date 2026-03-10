@@ -1,0 +1,98 @@
+// Jenkins server: http://144.91.70.227:8080
+// API runs on a different host port (API_HOST_PORT) so it does not conflict with Jenkins on 8080.
+// Run this pipeline from the server (Contabo VPS) so Docker build/run execute there.
+pipeline {
+    agent any
+
+    environment {
+        CONTAINER_NAME = 'ojisan-api'
+        IMAGE_NAME = 'ojisan-api'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        API_HOST_PORT = '5000'   // Host port for the API (Jenkins uses 8080)
+    }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                    docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                """
+            }
+        }
+
+        stage('Stop Existing Container') {
+            steps {
+                script {
+                    def running = sh(
+                        script: "docker ps -q -f name=^/${CONTAINER_NAME}$",
+                        returnStdout: true
+                    ).trim()
+                    if (running) {
+                        sh "docker stop ${CONTAINER_NAME}"
+                    }
+                }
+            }
+        }
+
+        stage('Remove Existing Container') {
+            steps {
+                script {
+                    def existing = sh(
+                        script: "docker ps -aq -f name=^/${CONTAINER_NAME}$",
+                        returnStdout: true
+                    ).trim()
+                    if (existing) {
+                        sh "docker rm ${CONTAINER_NAME}"
+                    }
+                }
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                // Pass credentials via Jenkins env vars or Credentials Binding (e.g. DB_CONNECTION_STRING, S3_*)
+                sh """
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        --restart unless-stopped \
+                        -p ${API_HOST_PORT}:8080 \
+                        -e ASPNETCORE_ENVIRONMENT=Production \
+                        -e ASPNETCORE_URLS=http://+:8080 \
+                        -e ConnectionStrings__OjisanBackendDb="\${DB_CONNECTION_STRING}" \
+                        -e S3_ACCESS_KEY="\${S3_ACCESS_KEY}" \
+                        -e S3_SECRET_KEY="\${S3_SECRET_KEY}" \
+                        -e S3_BUCKET="\${S3_BUCKET:-photos}" \
+                        -e S3_ENDPOINT="\${S3_ENDPOINT:-https://eu2.contabostorage.com}" \
+                        -e S3_PUBLIC_BASE_URL="\${S3_PUBLIC_BASE_URL}" \
+                        ${IMAGE_NAME}:${IMAGE_TAG}
+                """
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed. Check logs above.'
+            // Optional: notify, archive logs, etc.
+        }
+        success {
+            echo "Deployed ${IMAGE_NAME}:${IMAGE_TAG}"
+            // Optional: tag as 'latest', push to registry, etc.
+        }
+        always {
+            cleanWs(deleteDirs: true, patterns: [[pattern: '.git', type: 'INCLUDE']])
+        }
+    }
+}

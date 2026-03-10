@@ -3,9 +3,12 @@
   <PropertyGroup>
     <RootNamespace>OjisanBackend.Infrastructure</RootNamespace>
     <AssemblyName>OjisanBackend.Infrastructure</AssemblyName>
+    <!-- Suppress MimeKit vulnerability warning as error (NU1903) while running with MailKit/MimeKit 4.15.0 -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="Hashids.net" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

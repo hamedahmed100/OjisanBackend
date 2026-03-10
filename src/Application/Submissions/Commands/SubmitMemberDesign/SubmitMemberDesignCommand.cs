@@ -32,7 +32,7 @@ public record SubmitMemberDesignCommand : IRequest<Guid>
     public string CustomDesignJson { get; init; } = string.Empty;
 
     /// <summary>
-    /// Badges: 3–11 required, each with non-empty comment.
+    /// Badges: 3–12 required. Comments may be empty.
     /// </summary>
     public List<MemberBadgeInputDto> Badges { get; init; } = new();
 
@@ -50,7 +50,7 @@ public record SubmitMemberDesignCommand : IRequest<Guid>
 public class SubmitMemberDesignCommandHandler : IRequestHandler<SubmitMemberDesignCommand, Guid>
 {
     private const int MinBadges = 3;
-    private const int MaxBadges = 11;
+    private const int MaxBadges = 12;
 
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
@@ -71,15 +71,6 @@ public class SubmitMemberDesignCommandHandler : IRequestHandler<SubmitMemberDesi
         {
             throw new BadgeCountValidationException(
                 $"Badge count must be between {MinBadges} and {MaxBadges}. Received: {request.Badges.Count}.");
-        }
-
-        var invalidBadge = request.Badges
-            .Select((b, i) => (Index: i + 1, Badge: b))
-            .FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Badge.Comment));
-        if (invalidBadge.Badge != null!)
-        {
-            throw new BadgeCommentValidationException(
-                $"Badge at index {invalidBadge.Index} requires a non-empty comment.");
         }
 
         var group = await _context.Groups

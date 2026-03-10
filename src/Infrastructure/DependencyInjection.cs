@@ -64,6 +64,7 @@ public static class DependencyInjection
         builder.Services.AddSingleton<IInviteCodeService, InviteCodeService>();
         builder.Services.AddScoped<IImageUploadService, LocalImageUploadService>();
         builder.Services.AddScoped<IGroupPricingService, GroupPricingService>();
+        builder.Services.AddScoped<IMediaLibraryFileService, LocalMediaLibraryFileService>();
 
         // Register HttpClient for Fatorah payment service
         builder.Services.AddHttpClient(nameof(FatorahPaymentService));

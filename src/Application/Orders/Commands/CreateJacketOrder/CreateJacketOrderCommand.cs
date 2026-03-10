@@ -9,7 +9,7 @@ using OjisanBackend.Domain.Exceptions;
 namespace OjisanBackend.Application.Orders.Commands.CreateJacketOrder;
 
 /// <summary>
-/// Badge input for jacket order. Comment is mandatory.
+/// Badge input for jacket order. Comment may be empty.
 /// </summary>
 public record BadgeInputDto
 {
@@ -37,7 +37,7 @@ public record CreateJacketOrderResult
 public class CreateJacketOrderCommandHandler : IRequestHandler<CreateJacketOrderCommand, CreateJacketOrderResult>
 {
     private const int MinBadges = 3;
-    private const int MaxBadges = 11;
+    private const int MaxBadges = 12;
 
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
@@ -52,21 +52,11 @@ public class CreateJacketOrderCommandHandler : IRequestHandler<CreateJacketOrder
     {
         Guard.Against.NullOrWhiteSpace(_user.Id, nameof(_user.Id));
 
-        // Validate badges: 3–11 required
+        // Validate badges: 3–12 required
         if (request.Badges.Count < MinBadges || request.Badges.Count > MaxBadges)
         {
             throw new BadgeCountValidationException(
                 $"Badge count must be between {MinBadges} and {MaxBadges}. Received: {request.Badges.Count}.");
-        }
-
-        // Validate: each badge must have a non-empty comment
-        var invalidBadge = request.Badges
-            .Select((b, i) => (Index: i + 1, Badge: b))
-            .FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Badge.Comment));
-        if (invalidBadge.Badge != null!)
-        {
-            throw new BadgeCommentValidationException(
-                $"Badge at index {invalidBadge.Index} requires a non-empty comment.");
         }
 
         // Get jacket product

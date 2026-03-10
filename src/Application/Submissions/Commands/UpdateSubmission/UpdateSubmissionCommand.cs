@@ -5,6 +5,7 @@ using OjisanBackend.Application.Common.Exceptions;
 using OjisanBackend.Application.Common.Interfaces;
 using OjisanBackend.Application.Submissions.Commands.SubmitMemberDesign;
 using OjisanBackend.Domain.Entities;
+using OjisanBackend.Domain.Enums;
 using OjisanBackend.Domain.Exceptions;
 
 namespace OjisanBackend.Application.Submissions.Commands.UpdateSubmission;
@@ -18,7 +19,7 @@ public record UpdateSubmissionCommand : IRequest
     public string NewCustomDesignJson { get; init; } = string.Empty;
 
     /// <summary>
-    /// Optional: replace badges when resubmitting. If provided, must be 3–11 with non-empty comments.
+    /// Optional: replace badges when resubmitting. If provided, must be 3–12. Comments may be empty.
     /// </summary>
     public List<MemberBadgeInputDto>? Badges { get; init; }
 
@@ -36,7 +37,7 @@ public record UpdateSubmissionCommand : IRequest
 public class UpdateSubmissionCommandHandler : IRequestHandler<UpdateSubmissionCommand>
 {
     private const int MinBadges = 3;
-    private const int MaxBadges = 11;
+    private const int MaxBadges = 12;
 
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
@@ -80,6 +81,12 @@ public class UpdateSubmissionCommandHandler : IRequestHandler<UpdateSubmissionCo
             throw new ForbiddenAccessException("You can only update your own submissions.");
         }
 
+        // Allow resubmission when Rejected: auto-unlock if admin rejected but forgot to toggle (legacy/edge case)
+        if (submission.Status == SubmissionStatus.Rejected && submission.IsEditLocked)
+        {
+            submission.UnlockEdit();
+        }
+
         var customDesignJson = group.IsUniformColorSelected ? group.BaseDesignJson : request.NewCustomDesignJson;
         submission.UpdateDesign(customDesignJson);
 
@@ -100,15 +107,7 @@ public class UpdateSubmissionCommandHandler : IRequestHandler<UpdateSubmissionCo
                     $"Badge count must be between {MinBadges} and {MaxBadges}. Received: {request.Badges.Count}.");
             }
 
-            var invalidBadge = request.Badges
-                .Select((b, i) => (Index: i + 1, Badge: b))
-                .FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Badge.Comment));
-            if (invalidBadge.Badge != null!)
-            {
-                throw new BadgeCommentValidationException(
-                    $"Badge at index {invalidBadge.Index} requires a non-empty comment.");
-            }
-
+            // Comments may be empty (frontend design payload often omits them)
             _context.OrderBadges.RemoveRange(submission.Badges);
             foreach (var badge in request.Badges)
             {

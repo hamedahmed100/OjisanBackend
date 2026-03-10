@@ -51,7 +51,10 @@ public class Users : EndpointGroupBase
             if (string.IsNullOrEmpty(email) || !EmailValidator.IsValid(email))
                 return TypedResults.Problem("A valid email is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var user = new ApplicationUser();
+            var user = new ApplicationUser
+            {
+                CreatedAt = DateTimeOffset.UtcNow
+            };
             await userStore.SetUserNameAsync(user, email, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
             var result = await userManager.CreateAsync(user, request.Password ?? string.Empty);
@@ -125,6 +128,9 @@ public class Users : EndpointGroupBase
 
             if (!result.Succeeded)
                 return TypedResults.Problem("Invalid login attempt.", statusCode: StatusCodes.Status401Unauthorized);
+
+            user.LastLoginAt = DateTimeOffset.UtcNow;
+            await userManager.UpdateAsync(user);
 
             return TypedResults.Empty;
         })

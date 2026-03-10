@@ -60,7 +60,7 @@ public class OtoShippingService : IShippingService
             item_count = details.ItemCount,
             total_value = details.TotalValue,
             currency = "SAR",
-            order_reference = details.GroupId.ToString()
+            order_reference = details.OrderReference
         };
 
         var jsonContent = JsonSerializer.Serialize(payload, new JsonSerializerOptions

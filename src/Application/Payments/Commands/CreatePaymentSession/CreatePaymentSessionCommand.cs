@@ -13,7 +13,11 @@ namespace OjisanBackend.Application.Payments.Commands.CreatePaymentSession;
 
 public record CreatePaymentSessionCommand : IRequest<string>
 {
-    public Guid GroupId { get; init; }
+    /// <summary>Group ID for group orders. Use this or OrderSubmissionId.</summary>
+    public Guid? GroupId { get; init; }
+
+    /// <summary>Order submission ID for single orders. Use this or GroupId.</summary>
+    public Guid? OrderSubmissionId { get; init; }
 }
 
 public class CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentSessionCommand, string>
@@ -37,51 +41,46 @@ public class CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentS
 
     public async Task<string> Handle(CreatePaymentSessionCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.Default(request.GroupId, nameof(request.GroupId));
+        if (request.GroupId.HasValue)
+        {
+            return await HandleGroupPaymentAsync(request.GroupId.Value, cancellationToken);
+        }
 
-        // Fetch the group with its submissions to calculate the true total price
+        if (request.OrderSubmissionId.HasValue)
+        {
+            return await HandleSingleOrderPaymentAsync(request.OrderSubmissionId.Value, cancellationToken);
+        }
+
+        throw new ArgumentException("Either GroupId or OrderSubmissionId must be provided.");
+    }
+
+    private async Task<string> HandleGroupPaymentAsync(Guid groupId, CancellationToken cancellationToken)
+    {
         var group = await _context.Groups
             .Include(g => g.Submissions)
-            .FirstOrDefaultAsync(g => g.PublicId == request.GroupId, cancellationToken);
+            .FirstOrDefaultAsync(g => g.PublicId == groupId, cancellationToken);
 
         if (group is null)
         {
-            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), request.GroupId);
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(Group), groupId);
         }
 
-        // Ensure group is in Accepted status (ready for payment)
         if (group.Status != GroupStatus.Accepted)
         {
-            throw new InvalidOperationException($"Group {request.GroupId} is not in Accepted status. Current status: {group.Status}");
+            throw new InvalidOperationException($"Group {groupId} is not in Accepted status. Current status: {group.Status}");
         }
 
-        // Calculate the total group price by summing all submission prices
-        // Each OrderSubmission already has its calculated Price saved from when the member submitted it
         var totalGroupPrice = group.CalculateTotalGroupPrice();
-
         Guard.Against.NegativeOrZero(totalGroupPrice, nameof(totalGroupPrice), "Group must have at least one submission with a valid price.");
 
-        // Determine if this is a partial payment (50/50 split) based on group size
         var isPartialPayment = group.RequiresPartialPayment(_pricingSettings.Value.LargeGroupThreshold);
-        decimal upfrontAmount;
-
-        if (isPartialPayment)
-        {
-            // Large group: 50/50 split - charge 50% upfront
-            upfrontAmount = totalGroupPrice / 2;
-        }
-        else
-        {
-            // Small group or single order: full payment upfront
-            upfrontAmount = totalGroupPrice;
-        }
-
+        var upfrontAmount = isPartialPayment ? totalGroupPrice / 2 : totalGroupPrice;
         Guard.Against.NegativeOrZero(upfrontAmount, nameof(upfrontAmount));
 
-        // Create payment record
         var payment = new Payment
         {
             GroupId = group.Id,
+            OrderSubmissionId = null,
             Amount = upfrontAmount,
             IsPartial = isPartialPayment,
             Phase = PaymentPhase.Upfront,
@@ -91,16 +90,58 @@ public class CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentS
         _context.Payments.Add(payment);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Create payment session with Fatorah
-        var checkoutUrl = await _paymentService.CreatePaymentSessionAsync(
-            request.GroupId,
+        return await _paymentService.CreatePaymentSessionAsync(
+            groupId,
             upfrontAmount,
-            payment.PublicId.ToString(), // Use payment PublicId as merchant_resource_id
+            payment.PublicId.ToString(),
             cancellationToken);
+    }
 
-        // Update payment with transaction ID if returned by Fatorah
-        // For now, we'll store the checkout URL reference or transaction ID when webhook is received
+    private async Task<string> HandleSingleOrderPaymentAsync(Guid orderSubmissionId, CancellationToken cancellationToken)
+    {
+        var submission = await _context.OrderSubmissions
+            .FirstOrDefaultAsync(s => s.PublicId == orderSubmissionId, cancellationToken);
 
-        return checkoutUrl;
+        if (submission is null)
+        {
+            throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(nameof(OrderSubmission), orderSubmissionId);
+        }
+
+        if (submission.GroupId != null)
+        {
+            throw new InvalidOperationException("Use GroupId for group order payments.");
+        }
+
+        if (submission.Status != SubmissionStatus.Accepted)
+        {
+            throw new InvalidOperationException($"Order {orderSubmissionId} is not in Accepted status. Current status: {submission.Status}");
+        }
+
+        if (submission.IsPaid)
+        {
+            throw new InvalidOperationException("Order has already been paid.");
+        }
+
+        var amount = submission.Price;
+        Guard.Against.NegativeOrZero(amount, nameof(amount), "Order must have a valid price.");
+
+        var payment = new Payment
+        {
+            GroupId = null,
+            OrderSubmissionId = submission.Id,
+            Amount = amount,
+            IsPartial = false,
+            Phase = PaymentPhase.Upfront,
+            Status = PaymentStatus.Pending
+        };
+
+        _context.Payments.Add(payment);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await _paymentService.CreatePaymentSessionAsync(
+            orderSubmissionId,
+            amount,
+            payment.PublicId.ToString(),
+            cancellationToken);
     }
 }

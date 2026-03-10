@@ -12,9 +12,15 @@ public class Payment : BaseAuditableEntity
     public Guid PublicId { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// Foreign key to the Group entity.
+    /// Foreign key to the Group entity. Null for single-order payments.
     /// </summary>
-    public int GroupId { get; set; }
+    public int? GroupId { get; set; }
+
+    /// <summary>
+    /// Foreign key to the OrderSubmission entity for single orders. Null for group payments.
+    /// Exactly one of GroupId or OrderSubmissionId must be set.
+    /// </summary>
+    public int? OrderSubmissionId { get; set; }
 
     /// <summary>
     /// Transaction ID from Fatorah payment gateway.
@@ -43,11 +49,11 @@ public class Payment : BaseAuditableEntity
 
     public void MarkFinalPaymentRequested(string checkoutUrl)
     {
-        if (Phase != PaymentPhase.Final)
+        if (Phase != PaymentPhase.Final || !GroupId.HasValue)
         {
             return;
         }
 
-        AddDomainEvent(new SecondPaymentRequestedEvent(GroupId, PublicId, checkoutUrl));
+        AddDomainEvent(new SecondPaymentRequestedEvent(GroupId.Value, PublicId, checkoutUrl));
     }
 }

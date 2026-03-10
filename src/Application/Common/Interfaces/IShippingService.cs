@@ -19,7 +19,10 @@ public interface IShippingService
 /// </summary>
 public record ShippingDetailsDto
 {
-    public Guid GroupId { get; init; }
+    public Guid? GroupId { get; init; }
+    public Guid? OrderSubmissionId { get; init; }
+    /// <summary>Order reference for OTO (GroupId or OrderSubmissionId as string).</summary>
+    public string OrderReference => (GroupId ?? OrderSubmissionId ?? Guid.Empty).ToString();
     public string RecipientName { get; init; } = string.Empty;
     public string PhoneNumber { get; init; } = string.Empty;
     public string AddressLine1 { get; init; } = string.Empty;

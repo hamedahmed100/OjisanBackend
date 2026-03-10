@@ -113,7 +113,7 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
         }
 
         var membersJoinedCount = 1 + group.Members.Count;
-        var membersSubmittedCount = group.Submissions.Count;
+        var membersSubmittedCount = group.Submissions.Count(s => s.Status != SubmissionStatus.Draft);
 
         var frontendBaseUrl = (_configuration["FrontendBaseUrl"] ?? "http://localhost:4200").TrimEnd('/');
         var inviteLink = $"{frontendBaseUrl}/join/{group.InviteCode}";
@@ -129,7 +129,10 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
             displayNames[uid] = await _identityService.GetUserNameAsync(uid);
         }
 
-        var submittedUserIds = group.Submissions.Select(s => s.UserId).ToHashSet();
+        var submittedUserIds = group.Submissions
+            .Where(s => s.Status != SubmissionStatus.Draft)
+            .Select(s => s.UserId)
+            .ToHashSet();
 
         var members = new List<GroupMemberDto>
         {

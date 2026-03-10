@@ -18,7 +18,7 @@ public class OrderBadge : BaseAuditableEntity
     public string ImageUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Mandatory comment for this badge.
+    /// Optional comment for this badge.
     /// </summary>
     public string Comment { get; set; } = string.Empty;
 

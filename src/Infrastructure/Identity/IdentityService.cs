@@ -35,6 +35,7 @@ public class IdentityService : IIdentityService
         {
             UserName = userName,
             Email = userName,
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         var result = await _userManager.CreateAsync(user, password);

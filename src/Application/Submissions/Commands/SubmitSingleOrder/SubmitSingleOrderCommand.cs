@@ -37,10 +37,10 @@ public class SubmitSingleOrderCommandHandler : IRequestHandler<SubmitSingleOrder
         Guard.Against.NullOrWhiteSpace(_user.Id, nameof(_user.Id));
 
         // Verify the product exists and is active before creating the submission
-        var productExists = await _context.Products
-            .AnyAsync(p => p.PublicId == request.ProductId && p.IsActive, cancellationToken);
+        var product = await _context.Products
+            .FirstOrDefaultAsync(p => p.PublicId == request.ProductId && p.IsActive, cancellationToken);
 
-        if (!productExists)
+        if (product == null)
         {
             throw new OjisanBackend.Application.Common.Exceptions.NotFoundException(
                 $"Product with ID {request.ProductId} not found or is not active.");
@@ -49,6 +49,7 @@ public class SubmitSingleOrderCommandHandler : IRequestHandler<SubmitSingleOrder
         var submission = new OrderSubmission
         {
             GroupId = null,
+            ProductId = product.Id,
             UserId = _user.Id!,
             CustomDesignJson = request.CustomDesignJson,
             NameBehind = request.NameBehind,

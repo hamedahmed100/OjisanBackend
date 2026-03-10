@@ -78,7 +78,7 @@ public class ProcessPaymentWebhookCommandHandler : IRequestHandler<ProcessPaymen
             }
 
             // Raise domain event
-            payment.AddDomainEvent(new PaymentCompletedEvent(payment.GroupId, payment.PublicId));
+            payment.AddDomainEvent(new PaymentCompletedEvent(payment.GroupId, payment.OrderSubmissionId, payment.PublicId));
         }
         else if (transactionStatus.Equals("failed", StringComparison.OrdinalIgnoreCase) ||
                  transactionStatus.Equals("cancelled", StringComparison.OrdinalIgnoreCase))

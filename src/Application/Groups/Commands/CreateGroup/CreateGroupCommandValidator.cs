@@ -22,11 +22,6 @@ public class CreateGroupCommandValidator : AbstractValidator<CreateGroupCommand>
         RuleFor(v => v.EffectiveMemberCount)
             .InclusiveBetween(MinMemberCount, MaxMemberCount)
             .WithMessage($"Group size must be between {MinMemberCount} and {MaxMemberCount}.");
-
-        RuleFor(v => v.NameBehind)
-            .NotEmpty()
-            .WithMessage("Name behind is required when uniform color is selected.")
-            .When(v => v.IsUniformColorSelected);
     }
 }
 

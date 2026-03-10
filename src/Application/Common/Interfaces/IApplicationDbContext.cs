@@ -37,5 +37,11 @@ public interface IApplicationDbContext
 
     DbSet<UserAddress> UserAddresses { get; }
 
+    DbSet<MediaLibrary> MediaLibraries { get; }
+
+    DbSet<MediaLibraryImage> MediaLibraryImages { get; }
+
+    DbSet<ProductMediaLibrary> ProductMediaLibraries { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

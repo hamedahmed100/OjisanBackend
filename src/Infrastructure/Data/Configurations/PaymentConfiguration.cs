@@ -28,10 +28,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasConversion<string>()
             .HasMaxLength(50);
 
-        // Create index on GroupId for efficient lookups
         builder.HasIndex(p => p.GroupId);
-
-        // Create index on TransactionId for webhook lookups
+        builder.HasIndex(p => p.OrderSubmissionId);
         builder.HasIndex(p => p.TransactionId);
     }
 }

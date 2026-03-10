@@ -25,6 +25,7 @@ public class CustomExceptionHandler : IExceptionHandler
                 { typeof(UserNotMemberOfGroupException), HandleDomainException },
                 { typeof(DuplicateSubmissionException), HandleDomainException },
                 { typeof(SubmissionNotRejectedException), HandleDomainException },
+                { typeof(SubmissionEditLockedException), HandleDomainException },
                 { typeof(BadgeCountValidationException), HandleDomainException },
                 { typeof(BadgeCommentValidationException), HandleDomainException },
             };
@@ -118,6 +119,7 @@ public class CustomExceptionHandler : IExceptionHandler
             MemberAlreadyInGroupException => StatusCodes.Status409Conflict,
             DuplicateSubmissionException => StatusCodes.Status409Conflict,
             SubmissionNotRejectedException => StatusCodes.Status400BadRequest,
+            SubmissionEditLockedException => StatusCodes.Status400BadRequest,
             UserNotMemberOfGroupException => StatusCodes.Status400BadRequest,
             BadgeCountValidationException => StatusCodes.Status400BadRequest,
             BadgeCommentValidationException => StatusCodes.Status400BadRequest,

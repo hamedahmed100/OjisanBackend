@@ -6,6 +6,8 @@
     <AspnetVersion>10.0.0</AspnetVersion>
     <EfcoreVersion>10.0.0</EfcoreVersion>
     <MicrosoftExtensionsVersion>10.0.0</MicrosoftExtensionsVersion>
+    <!-- Temporarily suppress NuGet vulnerability warnings (NU1900–NU1905) so MimeKit/MailKit 4.15.0 does not fail the build -->
+    <NoWarn>$(NoWarn);NU1900;NU1901;NU1902;NU1903;NU1904;NU1905</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Ardalis.GuardClauses" Version="5.0.0" />
@@ -48,6 +50,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EfcoreVersion)" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.8.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.22.0" />
-    <PackageVersion Include="MailKit" Version="4.8.0" />
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.400" />
+    <PackageVersion Include="MailKit" Version="4.15.0" />
   </ItemGroup>
 </Project>

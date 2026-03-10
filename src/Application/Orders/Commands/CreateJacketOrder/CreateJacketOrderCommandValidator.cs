@@ -5,7 +5,7 @@ namespace OjisanBackend.Application.Orders.Commands.CreateJacketOrder;
 public class CreateJacketOrderCommandValidator : AbstractValidator<CreateJacketOrderCommand>
 {
     private const int MinBadges = 3;
-    private const int MaxBadges = 11;
+    private const int MaxBadges = 12;
 
     public CreateJacketOrderCommandValidator()
     {
@@ -16,7 +16,7 @@ public class CreateJacketOrderCommandValidator : AbstractValidator<CreateJacketO
         RuleForEach(x => x.Badges).ChildRules(badge =>
         {
             badge.RuleFor(b => b.ImageUrl).NotEmpty().WithMessage("Badge image URL is required.");
-            badge.RuleFor(b => b.Comment).NotEmpty().WithMessage("Comment is mandatory for each badge.");
+            // Comment may be empty
         });
     }
 }

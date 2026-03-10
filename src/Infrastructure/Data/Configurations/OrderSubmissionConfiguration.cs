@@ -27,6 +27,12 @@ public class OrderSubmissionConfiguration : IEntityTypeConfiguration<OrderSubmis
         builder.Property(os => os.AdminFeedback)
             .HasMaxLength(2000);
 
+        builder.Property(os => os.TrackingNumber)
+            .HasMaxLength(100);
+
+        builder.Property(os => os.ShippingLabelUrl)
+            .HasMaxLength(500);
+
         // Create index on GroupId and UserId for efficient lookups
         builder.HasIndex(os => new { os.GroupId, os.UserId });
     }
