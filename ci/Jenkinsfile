@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     def running = sh(
-                        script: "docker ps -q -f name=^/${CONTAINER_NAME}$",
+                        script: "docker ps -q -f name=^/${CONTAINER_NAME}\$",
                         returnStdout: true
                     ).trim()
                     if (running) {
@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     def existing = sh(
-                        script: "docker ps -aq -f name=^/${CONTAINER_NAME}$",
+                        script: "docker ps -aq -f name=^/${CONTAINER_NAME}\$",
                         returnStdout: true
                     ).trim()
                     if (existing) {
