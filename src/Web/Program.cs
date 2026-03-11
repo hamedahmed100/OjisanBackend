@@ -21,11 +21,14 @@ builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("W
 // builder Configuration
 var app = builder.Build();
 
-// Auto-migrate on startup (Docker/CI-CD: every deployment applies pending migrations)
+// Auto-migrate and seed on startup (Docker/CI-CD: every deployment applies migrations + ensures admin/seed data)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+    await initialiser.SeedAsync();
 }
 
 // Configure the HTTP request pipeline.
