@@ -28,15 +28,12 @@ public static class DependencyInjection
 
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
-        // Configure CORS
-        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
-            ?? new[] { "http://localhost:4200" };
-
+        // Configure CORS — allow all origins for now
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("FrontendPolicy", policy =>
             {
-                policy.WithOrigins(allowedOrigins)
+                policy.SetIsOriginAllowed(_ => true)
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials();
