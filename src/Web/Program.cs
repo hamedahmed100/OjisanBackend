@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OjisanBackend.Application.Common.Models;
 using OjisanBackend.Infrastructure.Data;
 
@@ -18,6 +19,13 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpS
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsAppSettings"));
 
 var app = builder.Build();
+
+// Auto-migrate on startup (Docker/CI-CD: every deployment applies pending migrations)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
