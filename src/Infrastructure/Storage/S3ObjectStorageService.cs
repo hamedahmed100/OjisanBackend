@@ -40,15 +40,16 @@ public class S3ObjectStorageService : IObjectStorageService
             config);
     }
 
+    /// <summary>
+    /// Contabo public URL format: https://eu2.contabostorage.com/{AccessKey}:{Bucket}/{key}
+    /// </summary>
     private string GetPublicBaseUrl()
     {
         if (!string.IsNullOrWhiteSpace(_options.PublicBaseUrl))
             return _options.PublicBaseUrl.TrimEnd('/');
 
         var endpoint = _options.Endpoint.TrimEnd('/');
-        return _options.ForcePathStyle
-            ? $"{endpoint}/{_options.Bucket}"
-            : endpoint.Replace("https://", $"https://{_options.Bucket}.");
+        return $"{endpoint}/{_options.AccessKey}:{_options.Bucket}";
     }
 
     public async Task<string> UploadAsync(
@@ -121,9 +122,15 @@ public class S3ObjectStorageService : IObjectStorageService
             {
                 var uri = new Uri(urlOrKey);
                 var path = uri.AbsolutePath.TrimStart('/');
+                // Contabo format: AccessKey:Bucket/key (e.g. a49a0b9d...:photos/uploads/libraries/guid.png)
+                var contaboPrefix = $":{_options.Bucket}/";
+                var idx = path.IndexOf(contaboPrefix, StringComparison.OrdinalIgnoreCase);
+                if (idx >= 0)
+                    return path[(idx + contaboPrefix.Length)..];
+                // Fallback: path is bucket/key
                 var bucketPrefix = $"{_options.Bucket}/";
                 if (path.StartsWith(bucketPrefix, StringComparison.OrdinalIgnoreCase))
-                    path = path[bucketPrefix.Length..];
+                    return path[bucketPrefix.Length..];
                 return path;
             }
             catch

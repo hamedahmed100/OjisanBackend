@@ -110,11 +110,13 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<My
 {
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
+    private readonly IStorageUrlResolver _urlResolver;
 
-    public GetMyOrdersQueryHandler(IApplicationDbContext context, IUser user)
+    public GetMyOrdersQueryHandler(IApplicationDbContext context, IUser user, IStorageUrlResolver urlResolver)
     {
         _context = context;
         _user = user;
+        _urlResolver = urlResolver;
     }
 
     public async Task<List<MyOrderDto>> Handle(GetMyOrdersQuery request, CancellationToken cancellationToken)
@@ -182,7 +184,7 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<My
                 Badges = s.Badges
                     .Select(b => new MyOrderBadgeDto
                     {
-                        ImageUrl = ToRelativeImagePath(b.ImageUrl),
+                        ImageUrl = _urlResolver.ToPublicUrl(b.ImageUrl),
                         Comment = b.Comment
                     })
                     .ToList(),
@@ -201,19 +203,5 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<My
         }).ToList();
     }
 
-    private static string ToRelativeImagePath(string imageUrl)
-    {
-        if (string.IsNullOrWhiteSpace(imageUrl))
-        {
-            return string.Empty;
-        }
-
-        const string marker = "/uploads/badges/";
-        var index = imageUrl.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-
-        return index >= 0
-            ? imageUrl[index..]
-            : imageUrl;
-    }
 }
 

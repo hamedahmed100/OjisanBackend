@@ -64,18 +64,19 @@ public static class DependencyInjection
         builder.Services.AddSingleton<IInviteCodeService, InviteCodeService>();
 
         var isProduction = builder.Environment.IsProduction();
+        builder.Services.Configure<S3StorageOptions>(options =>
+        {
+            options.AccessKey = builder.Configuration["S3_ACCESS_KEY"] ?? string.Empty;
+            options.SecretKey = builder.Configuration["S3_SECRET_KEY"] ?? string.Empty;
+            options.Bucket = builder.Configuration["S3_BUCKET"] ?? "photos";
+            options.Endpoint = builder.Configuration["S3_ENDPOINT"] ?? "https://eu2.contabostorage.com";
+            options.PublicBaseUrl = builder.Configuration["S3_PUBLIC_BASE_URL"];
+            options.ForcePathStyle = true;
+        });
+        builder.Services.AddScoped<IStorageUrlResolver, ContaboStorageUrlResolver>();
+
         if (isProduction)
         {
-            builder.Services.Configure<S3StorageOptions>(options =>
-            {
-                options.AccessKey = builder.Configuration["S3_ACCESS_KEY"] ?? string.Empty;
-                options.SecretKey = builder.Configuration["S3_SECRET_KEY"] ?? string.Empty;
-                options.Bucket = builder.Configuration["S3_BUCKET"] ?? "photos";
-                options.Endpoint = builder.Configuration["S3_ENDPOINT"] ?? "https://eu2.contabostorage.com";
-                options.PublicBaseUrl = builder.Configuration["S3_PUBLIC_BASE_URL"];
-                options.ForcePathStyle = true;
-            });
-
             builder.Services.AddScoped<IObjectStorageService, S3ObjectStorageService>();
             builder.Services.AddScoped<IImageUploadService, S3ImageUploadService>();
             builder.Services.AddScoped<IMediaLibraryFileService, S3MediaLibraryFileService>();

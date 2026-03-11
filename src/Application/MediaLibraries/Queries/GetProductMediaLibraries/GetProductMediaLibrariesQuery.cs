@@ -14,10 +14,12 @@ public record GetProductMediaLibrariesQuery : IRequest<IReadOnlyCollection<Media
 public class GetProductMediaLibrariesQueryHandler : IRequestHandler<GetProductMediaLibrariesQuery, IReadOnlyCollection<MediaLibraryDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IStorageUrlResolver _urlResolver;
 
-    public GetProductMediaLibrariesQueryHandler(IApplicationDbContext context)
+    public GetProductMediaLibrariesQueryHandler(IApplicationDbContext context, IStorageUrlResolver urlResolver)
     {
         _context = context;
+        _urlResolver = urlResolver;
     }
 
     public async Task<IReadOnlyCollection<MediaLibraryDto>> Handle(GetProductMediaLibrariesQuery request, CancellationToken cancellationToken)
@@ -53,7 +55,7 @@ public class GetProductMediaLibrariesQueryHandler : IRequestHandler<GetProductMe
                     .Select(i => new MediaLibraryImageDto
                     {
                         PublicId = i.PublicId,
-                        FilePath = i.FilePath,
+                        FilePath = _urlResolver.ToPublicUrl(i.FilePath),
                         OriginalFileName = i.OriginalFileName
                     })
                     .ToList()

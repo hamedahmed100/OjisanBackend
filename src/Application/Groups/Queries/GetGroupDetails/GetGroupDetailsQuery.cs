@@ -72,17 +72,20 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
     private readonly IUser _user;
     private readonly IIdentityService _identityService;
     private readonly IConfiguration _configuration;
+    private readonly IStorageUrlResolver _urlResolver;
 
     public GetGroupDetailsQueryHandler(
         IApplicationDbContext context,
         IUser user,
         IIdentityService identityService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IStorageUrlResolver urlResolver)
     {
         _context = context;
         _user = user;
         _identityService = identityService;
         _configuration = configuration;
+        _urlResolver = urlResolver;
     }
 
     public async Task<GetGroupDetailsResult> Handle(GetGroupDetailsQuery request, CancellationToken cancellationToken)
@@ -172,7 +175,7 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
                 Badges = s.Badges
                     .Select(b => new GroupSubmissionBadgeDto
                     {
-                        ImageUrl = ToRelativeImagePath(b.ImageUrl),
+                        ImageUrl = _urlResolver.ToPublicUrl(b.ImageUrl),
                         Comment = b.Comment
                     })
                     .ToList(),
@@ -208,12 +211,4 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
         };
     }
 
-    private static string ToRelativeImagePath(string imageUrl)
-    {
-        if (string.IsNullOrWhiteSpace(imageUrl))
-            return string.Empty;
-        const string marker = "/uploads/badges/";
-        var index = imageUrl.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        return index >= 0 ? imageUrl[index..] : imageUrl;
-    }
 }

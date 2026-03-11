@@ -13,10 +13,12 @@ public record GetMediaLibraryDetailsQuery : IRequest<AdminMediaLibraryDto>
 public class GetMediaLibraryDetailsQueryHandler : IRequestHandler<GetMediaLibraryDetailsQuery, AdminMediaLibraryDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IStorageUrlResolver _urlResolver;
 
-    public GetMediaLibraryDetailsQueryHandler(IApplicationDbContext context)
+    public GetMediaLibraryDetailsQueryHandler(IApplicationDbContext context, IStorageUrlResolver urlResolver)
     {
         _context = context;
+        _urlResolver = urlResolver;
     }
 
     public async Task<AdminMediaLibraryDto> Handle(GetMediaLibraryDetailsQuery request, CancellationToken cancellationToken)
@@ -48,7 +50,7 @@ public class GetMediaLibraryDetailsQueryHandler : IRequestHandler<GetMediaLibrar
             .Select(i => new MediaLibraryImageDto
             {
                 PublicId = i.PublicId,
-                FilePath = i.FilePath,
+                FilePath = _urlResolver.ToPublicUrl(i.FilePath),
                 OriginalFileName = i.OriginalFileName
             })
             .ToList();
