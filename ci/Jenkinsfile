@@ -92,8 +92,8 @@ pipeline {
                 // In Manage Jenkins → Credentials, add: DB_CONNECTION_STRING, s3-access-key, s3-secret-key (Kind: Secret text).
                 withCredentials([
                     string(credentialsId: 'DB_CONNECTION_STRING', variable: 'DB_CONNECTION_STRING'),
-                    string(credentialsId: 's3-access-key', variable: 'S3_ACCESS_KEY'),
-                    string(credentialsId: 's3-secret-key', variable: 'S3_SECRET_KEY')
+                    string(credentialsId: 'S3_ACCESS_KEY', variable: 'S3_ACCESS_KEY'),
+                    string(credentialsId: 'S3_SECRET_KEY', variable: 'S3_SECRET_KEY')
                 ]) {
                     sh '''
                         docker run -d \
