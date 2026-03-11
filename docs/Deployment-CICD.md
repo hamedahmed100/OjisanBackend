@@ -12,12 +12,32 @@ The API container listens on port **8080 inside the container**; the pipeline ma
 - **Jenkins URL:** http://144.91.70.227:8080  
 - Jenkins runs on the Contabo VPS. The pipeline (see `ci/Jenkinsfile`) should be run from that server so that `docker build` and `docker run` execute on the same host where the API will run.
 
+## Docker network
+
+The pipeline creates/uses **ojisan-network**. The API container runs with `--network ojisan-network` so it can reach SQL Server by name (`sqlserver-student`).
+
+**One-time on the server** — attach the SQL Server container to the same network (persists across reboots):
+
+```bash
+docker network connect ojisan-network sqlserver-student
+```
+
+Verify both containers are on the network:
+
+```bash
+docker network inspect ojisan-network | grep -A3 "Containers"
+```
+
+You should see both `ojisan-api` and `sqlserver-student` listed.
+
 ## Pipeline overview
 
 1. **Checkout** – Pulls the latest code from the repository.
 2. **Build Docker image** – Builds the API image from `docker/Dockerfile` (context: repo root).
 3. **Stop / Remove existing container** – Stops and removes the running `ojisan-api` container if present.
-4. **Run new container** – Starts the new container with the required environment variables.
+4. **Ensure Network** – Creates `ojisan-network` if it does not exist.
+5. **Verify Credentials** – Checks that required Jenkins credentials are set (no values printed).
+6. **Run new container** – Starts the new container on `ojisan-network` with the required environment variables.
 
 ## Required environment variables on Jenkins
 
