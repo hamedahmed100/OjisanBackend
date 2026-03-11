@@ -72,7 +72,8 @@ public class S3ObjectStorageService : IObjectStorageService
             Key = key,
             InputStream = content,
             ContentType = contentType ?? "application/octet-stream",
-            AutoCloseStream = false
+            AutoCloseStream = false,
+            CannedACL = S3CannedACL.PublicRead
         };
 
         try
