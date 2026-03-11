@@ -18,6 +18,7 @@ builder.Services.Configure<OtoSettings>(builder.Configuration.GetSection("OtoSet
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsAppSettings"));
 
+// builder Configuration
 var app = builder.Build();
 
 // Auto-migrate on startup (Docker/CI-CD: every deployment applies pending migrations)
